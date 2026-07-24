@@ -7,7 +7,7 @@ This repository branch is structured as a Codex Git marketplace. The marketplace
 - `.agents/plugins/marketplace.json`
 - `plugins/kh-aw/.codex-plugin/plugin.json`
 
-Use the Git source `addpyun78/AndroidAW` and the branch/ref `kh-aw-marketplace` when the Codex plugin-management surface offers **Add marketplace**, **Custom marketplace**, or a Git marketplace source field.
+Use the Git source `addpyun78/KH_Aw` and the branch/ref `kh-aw-marketplace` when the Codex plugin-management surface offers **Add marketplace**, **Custom marketplace**, or a Git marketplace source field.
 
 Then open the added marketplace, select **KH_Aw**, install it, and start a fresh Codex thread with the plugin selected or mentioned.
 

@@ -1,33 +1,13 @@
 {
   "schemaVersion": "3.0",
-  "generatedAt": "2026-07-24T08:20:36.668365+00:00",
+  "generatedAt": "2026-07-24T12:46:19.090644+00:00",
   "plugin": "kh-aw",
   "fileCount": 58,
   "files": [
     {
       "path": ".codex-plugin/plugin.json",
-      "sha256": "68703d51570c5f74482aa3d0c1b02e67ccb991ad82a0246fb12ae1ddaf312ff2",
-      "bytes": 3679
-    },
-    {
-      "path": "LICENSE",
-      "sha256": "4a62358edee56daf26a6dbdd7d9a66f578866994502eacb038b381d30778f3d4",
-      "bytes": 1066
-    },
-    {
-      "path": "PRIVACY.md",
-      "sha256": "14861d05fc2b319fb4caa01c3933b02a7aeec67038a78c1064ca81c92e4e3ea8",
-      "bytes": 1124
-    },
-    {
-      "path": "README.md",
-      "sha256": "00ae2d1e79c9ed63e4d7e09b6ea4b86dcae7848a8acea835c9436fb786b7c3dc",
-      "bytes": 2498
-    },
-    {
-      "path": "TERMS.md",
-      "sha256": "edfa16eca85d243dfd295d83ac15d72f0240b352ff2adc1f17178b3262827ae5",
-      "bytes": 831
+      "sha256": "f17b51846c3ed149491ddd483d5984e7e724ce46bd1480b5b0a03b26af1ba018",
+      "bytes": 3659
     },
     {
       "path": "assets/icon.png",
@@ -60,9 +40,24 @@
       "bytes": 67020
     },
     {
+      "path": "LICENSE",
+      "sha256": "4a62358edee56daf26a6dbdd7d9a66f578866994502eacb038b381d30778f3d4",
+      "bytes": 1066
+    },
+    {
       "path": "package.json",
       "sha256": "842198350538a79a9187af804a6131e55de9e625a5eb915559b3524167303150",
       "bytes": 1023
+    },
+    {
+      "path": "PRIVACY.md",
+      "sha256": "14861d05fc2b319fb4caa01c3933b02a7aeec67038a78c1064ca81c92e4e3ea8",
+      "bytes": 1124
+    },
+    {
+      "path": "README.md",
+      "sha256": "00ae2d1e79c9ed63e4d7e09b6ea4b86dcae7848a8acea835c9436fb786b7c3dc",
+      "bytes": 2498
     },
     {
       "path": "references/ARTIFACT_CONTRACTS_KO.md",
@@ -86,33 +81,33 @@
     },
     {
       "path": "schemas/native-capability-policy.schema.json",
-      "sha256": "7f5675253512cb38b72de697f36770ac0b590dba115e8d1f2e9cc50009d7ab34",
-      "bytes": 1016
+      "sha256": "3f2a9f8252bc1573a1dade3b0803a24eabdef3fb5feaf35dd32eeaf5062e50bd",
+      "bytes": 1012
     },
     {
       "path": "schemas/physical-evidence.schema.json",
-      "sha256": "7f1eb76ce15eee6e2618ec0b1e4ed6bae9e9645cc649f7760b63d0b44e98e664",
-      "bytes": 1106
+      "sha256": "17473b66bca123bc8d1bbad72fb793cbaea34bc833cf4a0d3e35eeca3cdcaa20",
+      "bytes": 1102
     },
     {
       "path": "schemas/run-lock.schema.json",
-      "sha256": "cf41b018cdf5f4a0a409a00b30c0fe2f0543e27a072496fb4bbe01ca44559175",
-      "bytes": 1547
+      "sha256": "b9498d57fa0251de3676d0342215c0df35206cc574f3cf31996b052deadd3957",
+      "bytes": 1543
     },
     {
       "path": "schemas/subagent-orchestration.schema.json",
-      "sha256": "9d7a235ab6a4b50f016afeee61a6524b2866515b3845d3278bd494c16098377d",
-      "bytes": 3574
+      "sha256": "10519a8d4163387ba7ce3f8e3e86d9163f6c9e263006b00d26a56a509914cb44",
+      "bytes": 3570
     },
     {
       "path": "schemas/test-report.schema.json",
-      "sha256": "9bf4f7ee8a0cd76203c12b6ec561999a11a59964b8984c5878f69271aaf6a02f",
-      "bytes": 1303
+      "sha256": "a9cd90547ac0d3b9a0730a174858637015d571fe60c566be668b114334bafcfd",
+      "bytes": 1299
     },
     {
       "path": "schemas/tool-policy.schema.json",
-      "sha256": "441614c7f6360b821b1859d0ad2d07d8d38eb04c168455e89a55e406a20ef57c",
-      "bytes": 1221
+      "sha256": "ffd13d43599e4b5c62b99e0fa669a08f7ca7b0be07b2f1115a8a657164897aa8",
+      "bytes": 1217
     },
     {
       "path": "scripts/android_emulator_suite.py",
@@ -230,19 +225,14 @@
       "bytes": 5827
     },
     {
-      "path": "skills/kh-aw-audit-upgrade/SKILL.md",
-      "sha256": "65f26ceff91f1ba56f7e69bcc62d148627a493b7a00ce438ca33399ef2b19b85",
-      "bytes": 1903
-    },
-    {
       "path": "skills/kh-aw-audit-upgrade/agents/openai.yaml",
       "sha256": "203d74a1a8c74c7173d52e8baa7867480f9d5582214a22b62b5ebd8355b25b9a",
       "bytes": 299
     },
     {
-      "path": "skills/kh-aw-full-cycle/SKILL.md",
-      "sha256": "815d157328f4b6548facc4c94b8c7454340d0db31f6caceff4eb9a5609f43616",
-      "bytes": 4857
+      "path": "skills/kh-aw-audit-upgrade/SKILL.md",
+      "sha256": "65f26ceff91f1ba56f7e69bcc62d148627a493b7a00ce438ca33399ef2b19b85",
+      "bytes": 1903
     },
     {
       "path": "skills/kh-aw-full-cycle/agents/openai.yaml",
@@ -250,9 +240,9 @@
       "bytes": 301
     },
     {
-      "path": "skills/kh-aw-implementation-repair/SKILL.md",
-      "sha256": "c79300ed36cdb171aabc514fd7711fb24f057e041bf2d87adac2a85d81df540d",
-      "bytes": 1978
+      "path": "skills/kh-aw-full-cycle/SKILL.md",
+      "sha256": "815d157328f4b6548facc4c94b8c7454340d0db31f6caceff4eb9a5609f43616",
+      "bytes": 4857
     },
     {
       "path": "skills/kh-aw-implementation-repair/agents/openai.yaml",
@@ -260,9 +250,9 @@
       "bytes": 289
     },
     {
-      "path": "skills/kh-aw-multi-agent-orchestration/SKILL.md",
-      "sha256": "21c316ef5817518c7216982fae1867d80f58fb92b42342c121fdc5dca2008e19",
-      "bytes": 6238
+      "path": "skills/kh-aw-implementation-repair/SKILL.md",
+      "sha256": "c79300ed36cdb171aabc514fd7711fb24f057e041bf2d87adac2a85d81df540d",
+      "bytes": 1978
     },
     {
       "path": "skills/kh-aw-multi-agent-orchestration/agents/openai.yaml",
@@ -270,9 +260,9 @@
       "bytes": 360
     },
     {
-      "path": "skills/kh-aw-release-company/SKILL.md",
-      "sha256": "0c281946edb01473d761d0c0eea9990dacc7421fe9b3bb4c80238aac253794c5",
-      "bytes": 2604
+      "path": "skills/kh-aw-multi-agent-orchestration/SKILL.md",
+      "sha256": "21c316ef5817518c7216982fae1867d80f58fb92b42342c121fdc5dca2008e19",
+      "bytes": 6238
     },
     {
       "path": "skills/kh-aw-release-company/agents/openai.yaml",
@@ -280,14 +270,24 @@
       "bytes": 290
     },
     {
-      "path": "skills/kh-aw-research-design/SKILL.md",
-      "sha256": "e8e211fbd58b508f30fa6132184300d45b63642ef3ff2c3382e0cbd65dfff72a",
-      "bytes": 2394
+      "path": "skills/kh-aw-release-company/SKILL.md",
+      "sha256": "0c281946edb01473d761d0c0eea9990dacc7421fe9b3bb4c80238aac253794c5",
+      "bytes": 2604
     },
     {
       "path": "skills/kh-aw-research-design/agents/openai.yaml",
       "sha256": "2dd5b560a002b68ba7a1fa3a1def54ab9b95c6e93b927eb0e9560f16d058b706",
       "bytes": 302
+    },
+    {
+      "path": "skills/kh-aw-research-design/SKILL.md",
+      "sha256": "e8e211fbd58b508f30fa6132184300d45b63642ef3ff2c3382e0cbd65dfff72a",
+      "bytes": 2394
+    },
+    {
+      "path": "TERMS.md",
+      "sha256": "edfa16eca85d243dfd295d83ac15d72f0240b352ff2adc1f17178b3262827ae5",
+      "bytes": 831
     },
     {
       "path": "tests/test_kh_aw.py",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/addpyun78/AndroidAW/schemas/subagent-orchestration.schema.json",
+  "$id": "https://github.com/addpyun78/KH_Aw/schemas/subagent-orchestration.schema.json",
   "title": "KH_Aw 3.2 dynamic subagent orchestration contract",
   "type": "object",
   "required": [

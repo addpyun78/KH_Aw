@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/addpyun78/AndroidAW/schemas/physical-evidence.schema.json",
+  "$id": "https://github.com/addpyun78/KH_Aw/schemas/physical-evidence.schema.json",
   "title": "KH_Aw physical execution evidence",
   "type": "object",
   "required": ["executionId", "toolId", "command", "cwd", "startedAt", "finishedAt", "exitCode", "logPath", "logSha256", "status", "apkInstallExcluded"],

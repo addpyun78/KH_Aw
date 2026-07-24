@@ -1,9 +1,9 @@
 # GitHub Publication Design
 
-Target repository: `addpyun78/AndroidAW`  
+Target repository: `addpyun78/KH_Aw`  
 Target branch: `kh-aw-marketplace`
 
-The separate branch protects the existing AndroidAW main branch while placing `.agents/plugins/marketplace.json` at the Git repository root, which remote marketplace discovery requires.
+The separate branch protects the existing KH_Aw main branch while placing `.agents/plugins/marketplace.json` at the Git repository root, which remote marketplace discovery requires.
 
 ## Release tags
 

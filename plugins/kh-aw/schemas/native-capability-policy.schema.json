@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/addpyun78/AndroidAW/schemas/native-capability-policy.schema.json",
+  "$id": "https://github.com/addpyun78/KH_Aw/schemas/native-capability-policy.schema.json",
   "title": "KH_Aw native capability policy",
   "type": "object",
   "required": ["schemaVersion", "capabilities"],

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/addpyun78/AndroidAW/schemas/tool-policy.schema.json",
+  "$id": "https://github.com/addpyun78/KH_Aw/schemas/tool-policy.schema.json",
   "title": "KH_Aw physical tool policy",
   "type": "object",
   "required": ["schemaVersion", "targetPipeline", "apkInstallation", "requiredTools", "configuration"],
