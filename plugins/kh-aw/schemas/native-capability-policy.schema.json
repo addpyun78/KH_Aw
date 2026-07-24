@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/addpyun78/AndroidAW/schemas/native-capability-policy.schema.json",
+  "title": "KH_Aw native capability policy",
+  "type": "object",
+  "required": ["schemaVersion", "capabilities"],
+  "properties": {
+    "schemaVersion": {"const": "3.0"},
+    "capabilities": {
+      "type": "array",
+      "minItems": 9,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "stage", "preferredSlash", "required", "fallback"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "stage": {"type": "string", "enum": ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]},
+          "preferredSlash": {"type": "string", "pattern": "^/"},
+          "required": {"const": true},
+          "fallback": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

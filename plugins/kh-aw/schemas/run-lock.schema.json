@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/addpyun78/AndroidAW/schemas/run-lock.schema.json",
+  "title": "KH_Aw immutable run lock",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "lockType",
+    "runId",
+    "engineVersion",
+    "projectRoot",
+    "workspaceRoot",
+    "runRoot",
+    "analysisMode",
+    "analysisFolder",
+    "analysisSourceRoot",
+    "targetPipeline",
+    "instructionsSha256",
+    "apkInstallation",
+    "stageOrder",
+    "subAgentEveryStage",
+    "subAgentMinimum",
+    "subAgentMaximum",
+    "fixedSixtySubAgents",
+    "promptOnlySubAgentDelegation",
+    "independentSubAgentSessions"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "3.0"
+    },
+    "lockType": {
+      "const": "KH_Aw-run-contract"
+    },
+    "apkInstallation": {
+      "const": "forbidden"
+    },
+    "instructionsSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "stageOrder": {
+      "const": [
+        "intake",
+        "analyze",
+        "research",
+        "design",
+        "implement",
+        "review",
+        "test",
+        "release"
+      ]
+    },
+    "subAgentEveryStage": {
+      "const": true
+    },
+    "subAgentMinimum": {
+      "const": 2
+    },
+    "subAgentMaximum": {
+      "const": 60
+    },
+    "fixedSixtySubAgents": {
+      "const": false
+    },
+    "promptOnlySubAgentDelegation": {
+      "const": "forbidden"
+    },
+    "independentSubAgentSessions": {
+      "const": "required"
+    }
+  },
+  "additionalProperties": true
+}

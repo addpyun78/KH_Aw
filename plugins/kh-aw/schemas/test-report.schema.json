@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/addpyun78/AndroidAW/schemas/test-report.schema.json",
+  "title": "KH_Aw test report",
+  "type": "object",
+  "required": ["schemaVersion", "apkInstallationPolicy", "toolDiscovery", "toolExecutions", "pageVisualChecks", "accessibilityChecks", "responsiveChecks", "securityChecks", "stateChecks", "performanceChecks", "visualRegressionChecks", "emulatorSimulatorChecks", "unresolvedIssues", "releaseDecision", "omissions"],
+  "properties": {
+    "schemaVersion": {"const": "3.0"},
+    "apkInstallationPolicy": {"const": "forbidden"},
+    "toolDiscovery": {"type": "object"},
+    "toolExecutions": {"type": "array", "items": {"$ref": "physical-evidence.schema.json"}},
+    "pageVisualChecks": {"type": "array"},
+    "accessibilityChecks": {"type": "array"},
+    "responsiveChecks": {"type": "array"},
+    "securityChecks": {"type": "array"},
+    "stateChecks": {"type": "array"},
+    "performanceChecks": {"type": "array"},
+    "visualRegressionChecks": {"type": "array"},
+    "emulatorSimulatorChecks": {"type": "array"},
+    "unresolvedIssues": {"type": "array", "maxItems": 0},
+    "releaseDecision": {"const": "approved"},
+    "omissions": {"type": "array", "maxItems": 0}
+  },
+  "additionalProperties": true
+}

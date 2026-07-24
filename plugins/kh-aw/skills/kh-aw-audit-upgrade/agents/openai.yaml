@@ -1,0 +1,6 @@
+interface:
+  display_name: "KH_Aw Audit"
+  short_description: "전체 파일과 로직을 누락 없이 조사·업그레이드"
+  default_prompt: "KH_Aw 계약과 실행 게이트를 사용해 실제 파일 증거로 이 작업을 끝까지 수행해줘."
+policy:
+  allow_implicit_invocation: true

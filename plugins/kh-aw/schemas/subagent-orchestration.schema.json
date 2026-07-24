@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/addpyun78/AndroidAW/schemas/subagent-orchestration.schema.json",
+  "title": "KH_Aw 3.2 dynamic subagent orchestration contract",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "stage",
+    "minimumSubAgents",
+    "maximumSubAgents",
+    "safetyFloorSubAgents",
+    "selectedSubAgents",
+    "dynamicScaling",
+    "assignments",
+    "planFingerprint"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "3.2"
+    },
+    "stage": {
+      "enum": [
+        "intake",
+        "analyze",
+        "research",
+        "design",
+        "implement",
+        "review",
+        "test",
+        "release"
+      ]
+    },
+    "minimumSubAgents": {
+      "const": 2
+    },
+    "maximumSubAgents": {
+      "const": 60
+    },
+    "safetyFloorSubAgents": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 60
+    },
+    "selectedSubAgents": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 60
+    },
+    "recommendedSubAgents": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 60
+    },
+    "fixedSixty": {
+      "const": false
+    },
+    "dynamicScaling": {
+      "const": true
+    },
+    "scaleJustification": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "assignments": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "required": [
+          "workerId",
+          "taskId",
+          "role",
+          "scopeIds",
+          "reviewTargetWorkerIds",
+          "dispatchContractPath",
+          "dispatchContractSha256",
+          "independentSessionRequired",
+          "physicalOutputRequired",
+          "immutableDispatchContractRequired",
+          "invocationReceiptRequired"
+        ],
+        "properties": {
+          "workerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "taskId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scopeIds": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "reviewTargetWorkerIds": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "dispatchContractPath": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dispatchContractSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "independentSessionRequired": {
+            "const": true
+          },
+          "physicalOutputRequired": {
+            "const": true
+          },
+          "immutableDispatchContractRequired": {
+            "const": true
+          },
+          "invocationReceiptRequired": {
+            "const": true
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "planFingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

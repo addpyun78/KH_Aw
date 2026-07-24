@@ -1,0 +1,67 @@
+{
+  "name": "kh-aw",
+  "version": "3.2.0",
+  "description": "Logic-enforced Codex app/web company workflow with dynamic 2-60 independent subagents per stage, native-capability fallbacks, exhaustive audits, direct body research, every-page mockups, real browser/emulator/simulator/tool evidence, and nonterminal auto-repair. APK installation is excluded.",
+  "author": {
+    "name": "addpyun78",
+    "url": "https://github.com/addpyun78"
+  },
+  "homepage": "https://github.com/addpyun78/AndroidAW/tree/kh-aw-marketplace",
+  "repository": "https://github.com/addpyun78/AndroidAW",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "app-development",
+    "web-development",
+    "full-audit",
+    "visual-mockups",
+    "web-research",
+    "auto-repair",
+    "quality-gates",
+    "small-business",
+    "slash-capabilities",
+    "playwright",
+    "accessibility",
+    "lighthouse",
+    "android-emulator",
+    "ios-simulator",
+    "visual-regression",
+    "apk-install-excluded",
+    "multi-agent",
+    "subagents",
+    "dynamic-orchestration",
+    "2-60-agents",
+    "cross-review"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "KH_Aw",
+    "shortDescription": "단계별 2~60 하위 AI·실제 도구·전체 페이지·자동수리를 로직 강제",
+    "longDescription": "KH_Aw는 Codex가 앱·웹 프로젝트를 수행할 때 각 단계 대장 AI가 프로젝트 규모에 맞춰 독립 하위 AI를 최소 2개, 최대 60개 범위에서 동적으로 배정하도록 코드로 강제합니다. 각 하위 AI는 고유 세션, 작업 ID, 물리 산출물, SHA-256, 교차검토 증거를 남겨야 하며 대장 AI가 전체 결과를 집계해야 단계가 통과합니다. 사용자 지시 원문과 전체 파일 추적, 실제 웹/GitHub 본문 근거, 모든 페이지의 독립 시각 목업, 이미지·모션 구현, Codex 네이티브/슬러시 기능 또는 물리 fallback, Chromium·Firefox·WebKit·axe·Lighthouse·시각회귀, Android 빌드·린트·단위테스트·APK 미설치 에뮬레이터 상태 검증, iOS 시뮬레이터 검증도 코드 게이트로 확인합니다. APK 설치 명령은 거부하며 실패는 종료하지 않고 실제 수리와 재검증으로 계속 진행합니다.",
+    "developerName": "addpyun78",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/addpyun78/AndroidAW/tree/kh-aw-marketplace",
+    "privacyPolicyURL": "https://github.com/addpyun78/AndroidAW/blob/kh-aw-marketplace/plugins/kh-aw/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/addpyun78/AndroidAW/blob/kh-aw-marketplace/plugins/kh-aw/TERMS.md",
+    "defaultPrompt": [
+      "KH_Aw로 이 저장소를 전수조사하고 각 단계에서 필요한 만큼 2~60개의 독립 하위 AI와 실제 도구 증거를 사용해 앱·웹 개발을 끝까지 진행해줘",
+      "분석폴더는 읽기 전용으로 보호하고 단계별 하위 AI 교차검토, 전체 페이지 목업, 이미지와 모션부터 실제 구현까지 진행해줘",
+      "APK 설치는 하지 말고 빌드·린트·단위테스트·에뮬레이터 상태·브라우저 E2E를 실제 실행해줘",
+      "현재 실패 게이트를 자동수리하고 하위 AI 물리 증거와 대장 AI 집계가 통과할 때까지 계속 진행해줘"
+    ],
+    "brandColor": "#0B6E4F",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "logoDark": "./assets/logo-dark.png",
+    "screenshots": [
+      "./assets/screenshot-workflow.png",
+      "./assets/screenshot-evidence.png",
+      "./assets/screenshot-repair.png"
+    ]
+  }
+}

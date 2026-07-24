@@ -1,0 +1,429 @@
+{
+  "schemaVersion": "3.2",
+  "generatedAt": "2026-07-24T08:20:43.054149+00:00",
+  "package": "KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE",
+  "fileCount": 84,
+  "totalBytes": 2420724,
+  "files": [
+    {
+      "path": ".agents/plugins/marketplace.json",
+      "sha256": "e9546ff3cf7fabbb9d11b90d5a1ddd09fcbaa6a4c7c439bc6ca7047a43c629d4",
+      "bytes": 408
+    },
+    {
+      "path": ".github/workflows/kh-aw-ci.yml",
+      "sha256": "15d2475a744f6526b5bdef255ad7f8b85960a7eb9012785d02276a6640553fd4",
+      "bytes": 6293
+    },
+    {
+      "path": "FINAL_BUILD_NOTICE.md",
+      "sha256": "edef376a71734757fd8c972cfdfea76f3d7b81d59db3b388bb5b04e61239cab8",
+      "bytes": 968
+    },
+    {
+      "path": "FINAL_REQUIREMENT_AUDIT.json",
+      "sha256": "6f4706021ed5f01922de789e1209c92b763c8006f058b61910983884e8945fb2",
+      "bytes": 7940
+    },
+    {
+      "path": "FINAL_REQUIREMENT_AUDIT.md",
+      "sha256": "746e88b08396b37bfa357a87510d5c5d4db0eb8e84a44c321e83fcc4ef3e95e8",
+      "bytes": 5201
+    },
+    {
+      "path": "FINAL_SCORE_REPORT.md",
+      "sha256": "12d058ac9574f7b4c2a02d446608ecff3c34155eb4ff0b6eeced7e98be1405be",
+      "bytes": 3413
+    },
+    {
+      "path": "FINAL_SECURITY_SCAN.json",
+      "sha256": "20b7d8f5b9830fb65f1b9f2f280f82e8a8e6143447bad5369619017f03248601",
+      "bytes": 256
+    },
+    {
+      "path": "FINAL_VALIDATION_REPORT.md",
+      "sha256": "7f314ae18f78e2bd48d24ded0ec7850e0cf32220bd94e2fab14c1936cbd927c5",
+      "bytes": 1892
+    },
+    {
+      "path": "FULL_STAGE_REPORT.md",
+      "sha256": "1d3354f99e96ad862e4d4bcb1bb352fb421782ffccedd8a63e157f521ed864c6",
+      "bytes": 5260
+    },
+    {
+      "path": "GITHUB_PUBLISH.md",
+      "sha256": "2d942e3eca45f71734f0b6966f466fd1154ee4fe2e997b3e10ada2338d037922",
+      "bytes": 741
+    },
+    {
+      "path": "INSTALL_CODEX_WEB.md",
+      "sha256": "3763bbe6684e9b44308aea7cd485d427c325901410c991e4a7cec605d102e479",
+      "bytes": 2075
+    },
+    {
+      "path": "NATIVE_AND_TOOL_ENFORCEMENT_REPORT.md",
+      "sha256": "34b42c0563c782e5e2b6fd6385f3bb592190a72709b4b806b1adfa6e864feb39",
+      "bytes": 4556
+    },
+    {
+      "path": "PUBLIC_PLUGIN_DIRECTORY.md",
+      "sha256": "4bfd4ec09ce6e2d2be1979eacc2451fbe7876c8fa95304d0e532fca45e252ad5",
+      "bytes": 1559
+    },
+    {
+      "path": "README.md",
+      "sha256": "ad10e675d9be0a8f654f40820ddc9571279d58d79352984927a6f8148e80c591",
+      "bytes": 4204
+    },
+    {
+      "path": "RELEASE_NOTES.md",
+      "sha256": "be70d017a995999bf7e9203151995545f9b769ef067f05f096e543048d21db04",
+      "bytes": 2073
+    },
+    {
+      "path": "audit/CORE_FILE_BY_FILE_REPORT.md",
+      "sha256": "32668715ca3234d2b5e8d213be452d9f05df73a2fbc1da071bdb812b9ffd749b",
+      "bytes": 33320
+    },
+    {
+      "path": "audit/CORE_SOURCE_AUDIT.json",
+      "sha256": "b8fed4ba297db27495ede54d6826e2d77cec5d95d9cbf176b637deb0ded07879",
+      "bytes": 38116
+    },
+    {
+      "path": "audit/FULL_INVENTORY_REPORT.md",
+      "sha256": "a4ff2e12b5bca57264e665091c0913d4b9709afe4c0223cace386cb22ab5a1c5",
+      "bytes": 2201
+    },
+    {
+      "path": "audit/LOGIC_DEEP_RESEARCH_REPORT.md",
+      "sha256": "8109cee6cc5b34b9fb960cc20ffa9d109b3d944ee8c52cf6ba9cd02ddc6d4dcf",
+      "bytes": 8188
+    },
+    {
+      "path": "audit/ORIGINAL_FILE_INVENTORY.csv",
+      "sha256": "7c4a5b3ca5712e089eb1db5da5d0f040ce551651cd24c49466791112c7da8609",
+      "bytes": 681356
+    },
+    {
+      "path": "audit/ORIGINAL_FILE_INVENTORY.jsonl",
+      "sha256": "78f59cca5e34a026903bbd68e87bf596eee16d2180ab6bd9f8ccd1a12ec00ad2",
+      "bytes": 991264
+    },
+    {
+      "path": "audit/ORIGINAL_INVENTORY_SUMMARY.json",
+      "sha256": "6cc00bf0c088974a93c4857ebfc923a5bc376746e810c21fdcdc476444ff8646",
+      "bytes": 2823
+    },
+    {
+      "path": "audit/REQUIREMENTS_TRACEABILITY.md",
+      "sha256": "c63095ab635a516894c2b8e2a05633b9ef6a8981f545c49cb9bfd8673cd86a3c",
+      "bytes": 4667
+    },
+    {
+      "path": "audit/SCORE_REPORT.md",
+      "sha256": "43a9c7a6626f8318dcb852679d14b370a167779febd28c3cab4c272438c9e322",
+      "bytes": 3325
+    },
+    {
+      "path": "audit/UPGRADE_MAPPING.md",
+      "sha256": "2e7c4d35b14fe91ce3734f3743a05ad22415ce5b6785e7426c9b06c55f7a7a2f",
+      "bytes": 2435
+    },
+    {
+      "path": "plugins/kh-aw/.codex-plugin/plugin.json",
+      "sha256": "68703d51570c5f74482aa3d0c1b02e67ccb991ad82a0246fb12ae1ddaf312ff2",
+      "bytes": 3679
+    },
+    {
+      "path": "plugins/kh-aw/LICENSE",
+      "sha256": "4a62358edee56daf26a6dbdd7d9a66f578866994502eacb038b381d30778f3d4",
+      "bytes": 1066
+    },
+    {
+      "path": "plugins/kh-aw/PACKAGE_MANIFEST.json",
+      "sha256": "1487d3de8297a7b862534c4b2bc34597305b234b0a0d5adbd229313e2baac807",
+      "bytes": 9665
+    },
+    {
+      "path": "plugins/kh-aw/PRIVACY.md",
+      "sha256": "14861d05fc2b319fb4caa01c3933b02a7aeec67038a78c1064ca81c92e4e3ea8",
+      "bytes": 1124
+    },
+    {
+      "path": "plugins/kh-aw/README.md",
+      "sha256": "00ae2d1e79c9ed63e4d7e09b6ea4b86dcae7848a8acea835c9436fb786b7c3dc",
+      "bytes": 2498
+    },
+    {
+      "path": "plugins/kh-aw/TERMS.md",
+      "sha256": "edfa16eca85d243dfd295d83ac15d72f0240b352ff2adc1f17178b3262827ae5",
+      "bytes": 831
+    },
+    {
+      "path": "plugins/kh-aw/assets/icon.png",
+      "sha256": "4e2e1457799e149da37ce894093478c0b49bd7a6a9697ec3c61234207e35474d",
+      "bytes": 8644
+    },
+    {
+      "path": "plugins/kh-aw/assets/logo-dark.png",
+      "sha256": "490bdbc64bb8f2e7eef9eef9e7fbd4e7b4b97d8b919a51eb82b770b82da91f93",
+      "bytes": 4740
+    },
+    {
+      "path": "plugins/kh-aw/assets/logo.png",
+      "sha256": "f50997ae7f432d7a31dff8b72c54f7c59300b6d6ad3352fa4f9d2aff9ad6ed9a",
+      "bytes": 4739
+    },
+    {
+      "path": "plugins/kh-aw/assets/screenshot-evidence.png",
+      "sha256": "432d02d635a2f8240eb4b217c93e1d16cec0e1f49b0caa56f628ba5016f15953",
+      "bytes": 63412
+    },
+    {
+      "path": "plugins/kh-aw/assets/screenshot-repair.png",
+      "sha256": "2db55dfffd0c66e58199b4fe6c7c1684584848c70092f8d08039eff82b732ca6",
+      "bytes": 59904
+    },
+    {
+      "path": "plugins/kh-aw/assets/screenshot-workflow.png",
+      "sha256": "cc27523b21b58a457963f933712b6b3d5537c6866580f76f902cf8f28633df35",
+      "bytes": 67020
+    },
+    {
+      "path": "plugins/kh-aw/package.json",
+      "sha256": "842198350538a79a9187af804a6131e55de9e625a5eb915559b3524167303150",
+      "bytes": 1023
+    },
+    {
+      "path": "plugins/kh-aw/references/ARTIFACT_CONTRACTS_KO.md",
+      "sha256": "454d9b527912f4cdd648e65e56faace3ff95ff06f61272c0d1c521a9821b09a0",
+      "bytes": 2438
+    },
+    {
+      "path": "plugins/kh-aw/references/COMPANY_QUALITY_KO.md",
+      "sha256": "09bf413b6e2d91288c7e36ca7b9e8e4d54b0708fe679a4377f52be3418c09464",
+      "bytes": 1319
+    },
+    {
+      "path": "plugins/kh-aw/references/ENFORCEMENT_CONTRACT_KO.md",
+      "sha256": "b026b2fe27fc07260569aeaf501ca7d2411109b59c250a839afbe134ea418568",
+      "bytes": 11417
+    },
+    {
+      "path": "plugins/kh-aw/references/RUNBOOK_KO.md",
+      "sha256": "c5cf4db196f228d003850f489fe98d0128fc9074bdf50059f6c4876a03159c88",
+      "bytes": 4616
+    },
+    {
+      "path": "plugins/kh-aw/schemas/native-capability-policy.schema.json",
+      "sha256": "7f5675253512cb38b72de697f36770ac0b590dba115e8d1f2e9cc50009d7ab34",
+      "bytes": 1016
+    },
+    {
+      "path": "plugins/kh-aw/schemas/physical-evidence.schema.json",
+      "sha256": "7f1eb76ce15eee6e2618ec0b1e4ed6bae9e9645cc649f7760b63d0b44e98e664",
+      "bytes": 1106
+    },
+    {
+      "path": "plugins/kh-aw/schemas/run-lock.schema.json",
+      "sha256": "cf41b018cdf5f4a0a409a00b30c0fe2f0543e27a072496fb4bbe01ca44559175",
+      "bytes": 1547
+    },
+    {
+      "path": "plugins/kh-aw/schemas/subagent-orchestration.schema.json",
+      "sha256": "9d7a235ab6a4b50f016afeee61a6524b2866515b3845d3278bd494c16098377d",
+      "bytes": 3574
+    },
+    {
+      "path": "plugins/kh-aw/schemas/test-report.schema.json",
+      "sha256": "9bf4f7ee8a0cd76203c12b6ec561999a11a59964b8984c5878f69271aaf6a02f",
+      "bytes": 1303
+    },
+    {
+      "path": "plugins/kh-aw/schemas/tool-policy.schema.json",
+      "sha256": "441614c7f6360b821b1859d0ad2d07d8d38eb04c168455e89a55e406a20ef57c",
+      "bytes": 1221
+    },
+    {
+      "path": "plugins/kh-aw/scripts/android_emulator_suite.py",
+      "sha256": "4930281d94d8177474f8b678ae98b163e28b2573a7441b24e4541f7db4dffa06",
+      "bytes": 5027
+    },
+    {
+      "path": "plugins/kh-aw/scripts/ios_simulator_suite.py",
+      "sha256": "0ddd6d0bb6a0f3afb999ec9cf8be1753699596698dcfe306020ca34c8a3af9a0",
+      "bytes": 2104
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/__init__.py",
+      "sha256": "73d621915078b2be738e2a5aff5d6386e7139c9571b10e8fd4032edd63cebf70",
+      "bytes": 66
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/capabilities.py",
+      "sha256": "ca57c5781cbbeccbd6dc54a44a7bf584b2ccd2f09a55bbc2cdfc7f83d0dd06a1",
+      "bytes": 6720
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/contracts.py",
+      "sha256": "70441422ba0dc3699f3a91201227b5ba5841c022969fe36f9090b9bdf940fe05",
+      "bytes": 11824
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/distribution.py",
+      "sha256": "e24fffe397370d734cddcebca58d4511c328be6fa36e92934c9323c3cd8137e9",
+      "bytes": 6080
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/evidence.py",
+      "sha256": "7a8e16d8038fae2d94511abc8933de169c12260f8de2384a1cb5e17574f01d3b",
+      "bytes": 5704
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/gates.py",
+      "sha256": "3dbd7a8face6b6598ab24567ebc09a3e35c4de30ceb30faa2bb73e818c03431f",
+      "bytes": 69473
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/integrity.py",
+      "sha256": "c04df9948af4cb0924d254f174231b534a765c00664abab5cfe2bd792dd50fce",
+      "bytes": 2483
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/inventory.py",
+      "sha256": "0eb048b6b5a14208055255ed73dec49547918d27e583d72c25f9c0d333544877",
+      "bytes": 5134
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/orchestration.py",
+      "sha256": "13550e22668ba6fc29d8a5f825457de236169cd8796ac733a3a03f998dcb0a7b",
+      "bytes": 43863
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/plugin_validate.py",
+      "sha256": "18fe6afe678d84907f3defd41538352bb4609f95d11ed3ed134f454f9f288c7b",
+      "bytes": 9854
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/protection.py",
+      "sha256": "988fd6ed6bf424f4964a7c275c6b017176baa7f7427017c5025900fb5b251c2b",
+      "bytes": 3969
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/repair.py",
+      "sha256": "aff391d9737149281ac4ab728473fdbb20eed6e4a8d55a74ff01b293503a6ce8",
+      "bytes": 13229
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/run_lock.py",
+      "sha256": "67e8b0c3f2cb3087ca7c5c72abc8684ec8951fd0269a587126d57af2107a5d87",
+      "bytes": 4310
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/security.py",
+      "sha256": "b973d21febbc9bd91c7942041cdc88c08b8d1f36f6059ea1f20aba2e28c19baa",
+      "bytes": 3104
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/tooling.py",
+      "sha256": "334b6e56c5fc1a5fcf3680c63cf80d69f4d9430ab60b1547923c788a9c15202f",
+      "bytes": 27083
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/util.py",
+      "sha256": "1454c97dd13c8869cc3419f666233a7324a361c7fba316ec52dc6083da449b1c",
+      "bytes": 6466
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw_cli.py",
+      "sha256": "b9f436b1d6cdff59b0a32be0356f95fc807232d62dff72f391eff9951cfcf878",
+      "bytes": 57771
+    },
+    {
+      "path": "plugins/kh-aw/scripts/lighthouse_check.mjs",
+      "sha256": "872c2702c4ea682bea484b6ccc68cd4085cf85efdcebd3ee0f16601c24025cd1",
+      "bytes": 1743
+    },
+    {
+      "path": "plugins/kh-aw/scripts/render_mockups.mjs",
+      "sha256": "e97dbf094f014229168e9eeb26f2955e2b6c1c566a4bcae93442327ba9b8c358",
+      "bytes": 2173
+    },
+    {
+      "path": "plugins/kh-aw/scripts/visual_regression.mjs",
+      "sha256": "83cf971df34f179de9b2fb18c11607e127188fb5b44766ab7fb4d1b86921460f",
+      "bytes": 2578
+    },
+    {
+      "path": "plugins/kh-aw/scripts/web_verify.mjs",
+      "sha256": "5e8489d5eff6a67cf07131de4b35ce3dc6ed35319df0c3ed04d137b15d8103b4",
+      "bytes": 5827
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-audit-upgrade/SKILL.md",
+      "sha256": "65f26ceff91f1ba56f7e69bcc62d148627a493b7a00ce438ca33399ef2b19b85",
+      "bytes": 1903
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-audit-upgrade/agents/openai.yaml",
+      "sha256": "203d74a1a8c74c7173d52e8baa7867480f9d5582214a22b62b5ebd8355b25b9a",
+      "bytes": 299
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-full-cycle/SKILL.md",
+      "sha256": "815d157328f4b6548facc4c94b8c7454340d0db31f6caceff4eb9a5609f43616",
+      "bytes": 4857
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-full-cycle/agents/openai.yaml",
+      "sha256": "417934f42f8a844ddd6f009050317bc3102c5c9ccf7059bfe1d4ff3fe4a8c5b6",
+      "bytes": 301
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-implementation-repair/SKILL.md",
+      "sha256": "c79300ed36cdb171aabc514fd7711fb24f057e041bf2d87adac2a85d81df540d",
+      "bytes": 1978
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-implementation-repair/agents/openai.yaml",
+      "sha256": "cbd45f637281ddc2b62aa88bda62a5467505dc5cccd5754c27af023b3b3e5966",
+      "bytes": 289
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-multi-agent-orchestration/SKILL.md",
+      "sha256": "21c316ef5817518c7216982fae1867d80f58fb92b42342c121fdc5dca2008e19",
+      "bytes": 6238
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-multi-agent-orchestration/agents/openai.yaml",
+      "sha256": "db057334d7d814b1d519a38ab47d6d85d32e5c34faaf63a449cfa75c9561da16",
+      "bytes": 360
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-release-company/SKILL.md",
+      "sha256": "0c281946edb01473d761d0c0eea9990dacc7421fe9b3bb4c80238aac253794c5",
+      "bytes": 2604
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-release-company/agents/openai.yaml",
+      "sha256": "0d3043133f587ae2be7aeebbd084fd57660e16a6540e10c248473c0caa39b4fd",
+      "bytes": 290
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-research-design/SKILL.md",
+      "sha256": "e8e211fbd58b508f30fa6132184300d45b63642ef3ff2c3382e0cbd65dfff72a",
+      "bytes": 2394
+    },
+    {
+      "path": "plugins/kh-aw/skills/kh-aw-research-design/agents/openai.yaml",
+      "sha256": "2dd5b560a002b68ba7a1fa3a1def54ab9b95c6e93b927eb0e9560f16d058b706",
+      "bytes": 302
+    },
+    {
+      "path": "plugins/kh-aw/tests/test_kh_aw.py",
+      "sha256": "27a262fd124ad349f11fd415e0f74f482f8909277739cae2f28354cd6cb1d881",
+      "bytes": 29888
+    }
+  ]
+}

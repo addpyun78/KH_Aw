@@ -1,0 +1,27 @@
+{
+  "name": "kh-aw-tooling",
+  "private": true,
+  "version": "3.2.0",
+  "type": "module",
+  "scripts": {
+    "bootstrap": "npm install && npx playwright install chromium firefox webkit",
+    "render:mockups": "node scripts/render_mockups.mjs",
+    "test": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+    "validate": "python3 scripts/kh_aw_cli.py doctor",
+    "test:python": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+    "check:node": "node --check scripts/render_mockups.mjs && node --check scripts/web_verify.mjs && node --check scripts/visual_regression.mjs && node --check scripts/lighthouse_check.mjs",
+    "integrity": "python3 scripts/kh_aw_cli.py build-package-manifest && python3 scripts/kh_aw_cli.py doctor"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "chrome-launcher": "^1.0.0",
+    "lighthouse": "^12.8.2",
+    "pixelmatch": "^6.0.0",
+    "playwright": "^1.54.0",
+    "pngjs": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=20",
+    "python": ">=3.10"
+  }
+}

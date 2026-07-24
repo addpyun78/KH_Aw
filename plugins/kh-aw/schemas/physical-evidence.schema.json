@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/addpyun78/AndroidAW/schemas/physical-evidence.schema.json",
+  "title": "KH_Aw physical execution evidence",
+  "type": "object",
+  "required": ["executionId", "toolId", "command", "cwd", "startedAt", "finishedAt", "exitCode", "logPath", "logSha256", "status", "apkInstallExcluded"],
+  "properties": {
+    "executionId": {"type": "string", "minLength": 1},
+    "toolId": {"type": "string", "minLength": 1},
+    "satisfiesToolIds": {"type": "array", "items": {"type": "string"}},
+    "command": {"type": "string", "minLength": 1},
+    "cwd": {"type": "string", "minLength": 1},
+    "startedAt": {"type": "string", "minLength": 1},
+    "finishedAt": {"type": "string", "minLength": 1},
+    "exitCode": {"const": 0},
+    "timedOut": {"const": false},
+    "logPath": {"type": "string", "minLength": 1},
+    "logSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "artifacts": {"type": "array"},
+    "apkInstallExcluded": {"const": true},
+    "status": {"const": "passed"}
+  },
+  "additionalProperties": true
+}
