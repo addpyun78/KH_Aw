@@ -7,6 +7,8 @@ on:
 jobs:
   validate-package:
     runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -19,6 +21,10 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check PyYAML
       - name: Parse every Python module
         run: python3 -m compileall -q plugins/kh-aw/scripts plugins/kh-aw/tests
+      - name: Remove generated Python bytecode
+        run: |
+          find plugins/kh-aw -type f -name '*.pyc' -delete
+          find plugins/kh-aw -type d -name __pycache__ -empty -delete
       - name: Parse every Node verification script
         run: |
           for file in plugins/kh-aw/scripts/*.mjs; do node --check "$file"; done

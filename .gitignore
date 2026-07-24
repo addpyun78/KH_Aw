@@ -1,0 +1,17 @@
+# Python temporary files
+__pycache__/
+*.py[cod]
+
+# Local runtime and dependency output
+node_modules/
+data/
+output/
+scratch/
+logs/
+
+# Local environment and credentials
+.env
+.env.*
+*.pem
+*.pfx
+*.key
