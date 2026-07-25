@@ -4,18 +4,18 @@
 
 | 단계 | 우선 활용 기능 |
 |---|---|
-| intake | `/plan`, `/agents` |
-| analyze | `/context`, `/agents`, `/artifact` |
-| research | `/agents`, 웹 검색·본문 열기 |
-| design | `/agents`, `/artifact`, 이미지·브라우저 기능 |
-| implement | `/agents`, `/diff` |
-| review | `/agents`, `/review`, `/diff` |
-| test | `/agents`, `/test`, `/hooks` |
-| release | `/agents`, `/artifact`, `/diff` |
+| intake | `/goal`, `/plan`, `/agents` |
+| analyze | `/goal`, `/context`, `/agents`, `/artifact` |
+| research | `/goal`, `/agents`, `/search`, `/artifact` |
+| design | `/goal`, `/plan`, `/agents`, `/artifact` |
+| implement | `/goal`, `/agents`, `/diff` |
+| review | `/goal`, `/agents`, `/review`, `/diff` |
+| test | `/goal`, `/agents`, `/test` |
+| release | `/goal`, `/agents`, `/artifact`, `/diff` |
 
-현재 Codex 표면에서 네이티브 기능을 사용할 수 있으면 실제 session ID, invocation, 결과 파일을 등록한다. 네이티브 UI 기능을 subprocess로 실행할 수 없는 표면에서는 Git·파일·웹 본문·브라우저·빌드 도구를 이용한 물리 fallback을 수행한다.
+필수 네이티브 기능은 실제 session ID, invocation, 결과 파일, Codex rollout JSONL을 모두 등록한다. 필수 UI 기능을 실행할 수 없는 표면은 Git·파일·웹본문·브라우저 결과만으로 통과시키지 않고 차단한다.
 
-`/agents` fallback 배정표는 실제 하위 AI 완료로 인정하지 않는다. 실제 독립 Codex 세션, 호출 영수증, 결과 파일이 별도로 필요하다.
+`/agents` 배정표만으로는 실제 하위 AI 완료로 인정하지 않는다. 실제 독립 Codex 세션 JSONL, 호출 영수증, 결과 파일, 교차검토가 별도로 필요하다.
 
 ## 2. 모든 단계의 대장 AI와 동적 2~60개 하위 AI
 

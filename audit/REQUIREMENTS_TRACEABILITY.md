@@ -23,7 +23,7 @@
 | U-19 | 제공 분석폴더 원본 보호 | full ZIP backup, snapshot, output boundary, restore | protection tests |
 | U-20 | Codex 웹 마켓플레이스 플러그인 | official plugin/marketplace structure, no local model cache dependency | doctor validation |
 | U-21 | 디자인을 KH_Aw에 하드코딩하지 않음 | dynamic research mode, placeholders must be replaced per project | research/design gates |
-| U-22 | 각 단계 순수/슬러시 기능 적극 활용 | 단계별 `/plan`·`/context`·`/agents`·`/artifact`·`/search`·`/diff`·`/review`·`/test`·`/hooks` capability | native session evidence 또는 물리 fallback gate |
+| U-22 | 각 단계 순수/슬러시 기능 적극 활용 | 단계별 `/goal`·`/agents`와 `/plan`·`/context`·`/artifact`·`/search`·`/diff`·`/review`·`/test` capability | 실제 native session JSONL 없으면 단계 차단 |
 | U-23 | 시뮬레이터·에뮬레이터 등 도구 적극 활용 | web 3브라우저, Android AVD/ADB, iOS Simulator, 조건부 도구 정책 | target toolchain coverage와 실제 로그·해시 |
 | U-24 | APK 설치 제외 | forbidden command patterns 및 android policy | 실행 전 차단·test gate 재탐지 |
 | U-25 | 프롬프트가 아니라 로직으로 강제 | physical evidence, canonical policy, immutable fingerprint | 문장형 완료·임의 JSON 약화 거부 |

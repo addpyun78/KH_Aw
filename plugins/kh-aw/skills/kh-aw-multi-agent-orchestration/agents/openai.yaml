@@ -1,6 +1,6 @@
 interface:
-  display_name: "KH_Aw Multi-Agent"
-  short_description: "각 단계에 필요한 2~60개 독립 하위 AI를 물리 증거로 강제"
-  default_prompt: "현재 KH_Aw 단계의 동적 하위 AI 계획을 계산하고 실제 독립 Codex 하위 AI 실행, 교차검토, 대장 AI 집계까지 완료해줘."
+  display_name: "KH_Aw 다중 담당자"
+  short_description: "단계별 2~60개 독립 Codex 담당자를 실제 세션으로 강제"
+  default_prompt: "Compute the dynamic worker plan for the current KH_Aw stage, run independent Codex sessions, cross-review their outputs, and complete the lead aggregation with physical evidence."
 policy:
   allow_implicit_invocation: true

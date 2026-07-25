@@ -59,6 +59,9 @@ def register_source(
     http_status: int = 200,
     project_fit_reason: str = "",
     license_note: str = "",
+    retrieval_mode: str = "registered-local-body",
+    retrieval_session_id: str = "",
+    retrieval_evidence_file: Path | None = None,
 ) -> dict[str, Any]:
     source_type = source_type.lower().strip()
     if source_type not in {"web", "github", "official"}:
@@ -75,6 +78,17 @@ def register_source(
     if body_file != raw_target:
         raw_target.write_bytes(raw)
     text_target.write_text(text, encoding="utf-8", newline="\n")
+    retrieval_evidence_path = ""
+    retrieval_evidence_sha256 = ""
+    if retrieval_evidence_file is not None:
+        retrieval_evidence_file = retrieval_evidence_file.resolve()
+        if not retrieval_evidence_file.is_file():
+            raise ValueError("retrieval evidence file does not exist")
+        try:
+            retrieval_evidence_path = retrieval_evidence_file.relative_to(run_root.resolve()).as_posix()
+        except ValueError as exc:
+            raise ValueError("retrieval evidence must stay inside run root") from exc
+        retrieval_evidence_sha256 = sha256_file(retrieval_evidence_file)
     record = {
         "id": source_id,
         "elementId": element_id,
@@ -91,6 +105,10 @@ def register_source(
         "excerpt": re.sub(r"\s+", " ", text)[:1200],
         "projectFitReason": project_fit_reason,
         "licenseNote": license_note,
+        "retrievalMode": retrieval_mode,
+        "retrievalSessionId": retrieval_session_id,
+        "retrievalEvidencePath": retrieval_evidence_path,
+        "retrievalEvidenceSha256": retrieval_evidence_sha256,
         "fetchedAt": utc_now(),
         "evidenceType": "direct-body-extraction",
         "textSha256": sha256_file(text_target),
@@ -153,6 +171,7 @@ def fetch_url_to_evidence(
         http_status=status,
         project_fit_reason=project_fit_reason,
         license_note=license_note,
+        retrieval_mode="live-fetch",
     )
     temp.unlink(missing_ok=True)
     return record

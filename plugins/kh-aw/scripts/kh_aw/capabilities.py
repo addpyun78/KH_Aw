@@ -1,31 +1,42 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
 from .util import read_json, sha256_file, utc_now, write_json
 
-# Codex UI slash/native features cannot be invoked by a skill-only plugin as a subprocess.
-# KH_Aw therefore treats each feature as a capability contract: prefer native evidence when
-# the surface exposes it, otherwise execute a deterministic physical fallback and record it.
+# A skill-only plugin cannot invoke Codex UI slash features as a subprocess.
+# Required slash capabilities fail closed until the active Codex session records native
+# evidence. Fallback evidence may support diagnosis, but it never satisfies the gate.
 NATIVE_CAPABILITIES: list[dict[str, Any]] = [
+    {"id": "codex-goal-intake", "stage": "intake", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-plan", "stage": "intake", "preferredSlash": "/plan", "fallback": "kh-aw-state-plan", "required": True},
     {"id": "codex-agents-intake", "stage": "intake", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-goal-analyze", "stage": "analyze", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-context", "stage": "analyze", "preferredSlash": "/context", "fallback": "kh-aw-context-inventory", "required": True},
     {"id": "codex-agents-analyze", "stage": "analyze", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-artifact-analysis", "stage": "analyze", "preferredSlash": "/artifact", "fallback": "kh-aw-analysis-artifacts", "required": True},
+    {"id": "codex-goal-research", "stage": "research", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-agents-research", "stage": "research", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-web-research", "stage": "research", "preferredSlash": "/search", "fallback": "kh-aw-body-fetch-registry", "required": True},
+    {"id": "codex-artifact-research", "stage": "research", "preferredSlash": "/artifact", "fallback": "kh-aw-research-artifacts", "required": True},
+    {"id": "codex-goal-design", "stage": "design", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
+    {"id": "codex-plan-design", "stage": "design", "preferredSlash": "/plan", "fallback": "kh-aw-design-plan", "required": True},
     {"id": "codex-agents-design", "stage": "design", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-artifact-design", "stage": "design", "preferredSlash": "/artifact", "fallback": "kh-aw-mockup-artifacts", "required": True},
+    {"id": "codex-goal-implement", "stage": "implement", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-agents-implement", "stage": "implement", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-diff-implement", "stage": "implement", "preferredSlash": "/diff", "fallback": "git-diff-physical", "required": True},
+    {"id": "codex-goal-review", "stage": "review", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-agents-review", "stage": "review", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-review", "stage": "review", "preferredSlash": "/review", "fallback": "kh-aw-browser-review", "required": True},
     {"id": "codex-diff-review", "stage": "review", "preferredSlash": "/diff", "fallback": "git-diff-physical", "required": True},
+    {"id": "codex-goal-test", "stage": "test", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-agents-test", "stage": "test", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-test", "stage": "test", "preferredSlash": "/test", "fallback": "kh-aw-toolchain", "required": True},
-    {"id": "codex-hooks", "stage": "test", "preferredSlash": "/hooks", "fallback": "kh-aw-gate-event-log", "required": True},
+    {"id": "codex-hooks", "stage": "test", "preferredSlash": "/hooks", "fallback": "kh-aw-gate-event-log", "required": False},
+    {"id": "codex-goal-release", "stage": "release", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-agents-release", "stage": "release", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-artifact-release", "stage": "release", "preferredSlash": "/artifact", "fallback": "kh-aw-release-artifacts", "required": True},
     {"id": "codex-diff-release", "stage": "release", "preferredSlash": "/diff", "fallback": "git-diff-physical", "required": True},
@@ -36,7 +47,9 @@ def capability_policy() -> dict[str, Any]:
     return {
         "schemaVersion": "3.0",
         "generatedAt": utc_now(),
-        "rule": "가능한 Codex 네이티브/슬러시 기능을 우선 사용한다. 현재 표면에서 사용할 수 없으면 물리 명령·파일·해시 기반 fallback을 실제 실행한다. 문장 주장만으로 통과하지 않는다.",
+        "requiredEvidenceMode": "native",
+        "fallbackSatisfiesRequiredCapability": False,
+        "rule": "Every required Codex slash capability must be used natively in the active session. A fallback record is diagnostic evidence only and cannot pass a stage gate.",
         "capabilities": [dict(item) for item in NATIVE_CAPABILITIES],
         "records": [],
     }
@@ -44,6 +57,38 @@ def capability_policy() -> dict[str, Any]:
 
 def _relative(run_root: Path, path: Path) -> str:
     return path.resolve().relative_to(run_root.resolve()).as_posix()
+
+
+def _validate_native_session_evidence(
+    path: Path,
+    *,
+    session_id: str,
+    preferred_slash: str,
+) -> tuple[str, str, int]:
+    path = path.expanduser().resolve()
+    normalized = path.as_posix().lower()
+    if "/.codex/sessions/" not in normalized or not path.name.lower().startswith("rollout-") or path.suffix.lower() != ".jsonl":
+        raise ValueError("native slash session evidence must be a physical Codex rollout JSONL under .codex/sessions")
+    if not path.is_file() or path.stat().st_size < 128:
+        raise ValueError("native slash Codex session JSONL is missing or too small")
+    event_count = 0
+    session_found = session_id in path.name
+    slash_found = False
+    with path.open("r", encoding="utf-8", errors="strict") as stream:
+        for line in stream:
+            if not line.strip():
+                continue
+            event_count += 1
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError("native slash Codex session JSONL contains invalid events") from exc
+            serialized = json.dumps(event, ensure_ascii=False)
+            session_found = session_found or session_id in serialized
+            slash_found = slash_found or preferred_slash in serialized
+    if not session_found or not slash_found:
+        raise ValueError("native slash Codex session JSONL is not bound to the session and slash invocation")
+    return path.as_posix(), sha256_file(path), event_count
 
 
 def record_capability(
@@ -55,6 +100,7 @@ def record_capability(
     invocation: str,
     tool_execution_ids: list[str] | None = None,
     session_id: str = "",
+    session_evidence_file: Path | None = None,
 ) -> dict[str, Any]:
     policy_path = run_root / "contract" / "native-capability-policy.json"
     policy = read_json(policy_path, {})
@@ -64,12 +110,24 @@ def record_capability(
     if mode not in {"native", "fallback"}:
         raise ValueError("mode must be native or fallback")
     definition = definitions[capability_id]
+    session_evidence_path = ""
+    session_evidence_sha256 = ""
+    session_evidence_event_count = 0
     if mode == "native":
         preferred = str(definition.get("preferredSlash", ""))
         if not session_id.strip():
             raise ValueError("native capability evidence requires a Codex session ID")
+        if len(session_id.strip()) < 8:
+            raise ValueError("native capability evidence requires a stable Codex session ID")
         if preferred and preferred not in invocation:
             raise ValueError(f"native invocation must contain {preferred}")
+        if session_evidence_file is None:
+            raise ValueError("native capability evidence requires a physical Codex session JSONL")
+        session_evidence_path, session_evidence_sha256, session_evidence_event_count = _validate_native_session_evidence(
+            session_evidence_file,
+            session_id=session_id.strip(),
+            preferred_slash=preferred,
+        )
     evidence_file = evidence_file.resolve()
     if not evidence_file.is_file() or evidence_file.stat().st_size < 16:
         raise ValueError("capability evidence file must exist and contain physical output")
@@ -89,6 +147,9 @@ def record_capability(
         "evidenceBytes": evidence_file.stat().st_size,
         "toolExecutionIds": list(tool_execution_ids or []),
         "sessionId": session_id,
+        "sessionEvidencePath": session_evidence_path,
+        "sessionEvidenceSha256": session_evidence_sha256,
+        "sessionEvidenceEventCount": session_evidence_event_count,
         "verifiedAt": utc_now(),
         "status": "verified",
     }

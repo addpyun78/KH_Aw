@@ -5,7 +5,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-EXPECTED_VERSION = "3.2.0"
+from .util import sha256_file
+
+EXPECTED_VERSION = "3.2.1"
 EXPECTED_SKILLS = {
     "kh-aw-audit-upgrade",
     "kh-aw-full-cycle",
@@ -28,7 +30,12 @@ REQUIRED_PLUGIN_FILES = {
     "scripts/kh_aw/tooling.py",
     "scripts/kh_aw/capabilities.py",
     "scripts/kh_aw/contracts.py",
+    "scripts/kh_aw/copy_audit.py",
     "scripts/kh_aw/distribution.py",
+    "scripts/kh_aw/language_policy.py",
+    "scripts/kh_aw/page_inventory.py",
+    "scripts/kh_aw/session_forensics.py",
+    "scripts/kh_aw/targeting.py",
     "scripts/android_emulator_suite.py",
     "scripts/ios_simulator_suite.py",
     "scripts/web_verify.mjs",
@@ -71,6 +78,15 @@ REQUIRED_MARKETPLACE_FILES = {
     "audit/SCORE_REPORT.md",
 }
 FORBIDDEN_PARTS = {"node_modules", "__pycache__", ".playwright", "browser-profile", "user-data-dir"}
+INTERNAL_TEXT_SUFFIXES = {".json", ".md", ".mjs", ".py", ".yaml", ".yml"}
+INTERNAL_TEXT_EXCLUSIONS: set[str] = set()
+USER_FACING_METADATA_FILES = {".codex-plugin/plugin.json"}
+HANGUL_PATTERN = re.compile(r"[\uac00-\ud7a3]")
+RELEASE_MANIFEST_EXCLUDED_PARTS = {".git", "__pycache__", ".pytest_cache", "node_modules"}
+RELEASE_MANIFEST_EXCLUDED_FILES = {
+    "RELEASE_MANIFEST.json",
+    "KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE.zip.sha256",
+}
 
 
 def _load_json(path: Path, errors: list[str], label: str) -> dict[str, Any] | None:
@@ -86,6 +102,43 @@ def _load_json(path: Path, errors: list[str], label: str) -> dict[str, Any] | No
         errors.append(f"{label} must contain a JSON object: {path}")
         return None
     return payload
+
+
+def _validate_release_manifest(marketplace_root: Path, errors: list[str]) -> None:
+    payload = _load_json(marketplace_root / "RELEASE_MANIFEST.json", errors, "release manifest")
+    if not payload:
+        return
+    raw_items = payload.get("files")
+    if not isinstance(raw_items, list):
+        errors.append("release manifest files must be a list")
+        return
+    items = {
+        str(item.get("path", "")): item
+        for item in raw_items
+        if isinstance(item, dict) and str(item.get("path", ""))
+    }
+    physical = {
+        path.relative_to(marketplace_root).as_posix(): path
+        for path in marketplace_root.rglob("*")
+        if path.is_file()
+        and path.name not in RELEASE_MANIFEST_EXCLUDED_FILES
+        and not set(path.relative_to(marketplace_root).parts) & RELEASE_MANIFEST_EXCLUDED_PARTS
+    }
+    missing = sorted(set(items) - set(physical))
+    uncovered = sorted(set(physical) - set(items))
+    if missing:
+        errors.append(f"release manifest references missing files: {missing}")
+    if uncovered:
+        errors.append(f"release manifest does not cover files: {uncovered}")
+    for relative in sorted(set(items) & set(physical)):
+        item = items[relative]
+        path = physical[relative]
+        if item.get("sha256") != sha256_file(path) or item.get("bytes") != path.stat().st_size:
+            errors.append(f"release manifest hash/size mismatch: {relative}")
+    if payload.get("fileCount") != len(items):
+        errors.append("release manifest fileCount mismatch")
+    if payload.get("totalBytes") != sum(int(item.get("bytes", -1)) for item in items.values()):
+        errors.append("release manifest totalBytes mismatch")
 
 
 def validate_distribution(plugin_root: Path, marketplace_root: Path) -> list[str]:
@@ -113,6 +166,7 @@ def validate_distribution(plugin_root: Path, marketplace_root: Path) -> list[str
     manifest = _load_json(plugin_root / ".codex-plugin" / "plugin.json", errors, "plugin manifest")
     package = _load_json(plugin_root / "package.json", errors, "package.json")
     marketplace = _load_json(marketplace_root / ".agents" / "plugins" / "marketplace.json", errors, "marketplace manifest")
+    _validate_release_manifest(marketplace_root, errors)
     if manifest:
         if manifest.get("name") != "kh-aw":
             errors.append("plugin manifest name must be kh-aw")
@@ -121,6 +175,13 @@ def validate_distribution(plugin_root: Path, marketplace_root: Path) -> list[str
         interface = manifest.get("interface", {})
         if not isinstance(interface, dict) or interface.get("displayName") != "KH_Aw":
             errors.append("plugin displayName must be KH_Aw")
+        elif not all(HANGUL_PATTERN.search(str(interface.get(field, ""))) for field in ("shortDescription", "longDescription")):
+            errors.append("plugin user-facing shortDescription and longDescription must be Korean")
+        default_prompts = interface.get("defaultPrompt", []) if isinstance(interface, dict) else []
+        if not isinstance(default_prompts, list) or not default_prompts or any(
+            any(ord(character) > 127 for character in str(prompt)) for prompt in default_prompts
+        ):
+            errors.append("plugin Codex-facing defaultPrompt entries must be English ASCII")
     if package and package.get("version") != EXPECTED_VERSION:
         errors.append(f"package.json version must be {EXPECTED_VERSION}")
     if marketplace:
@@ -134,14 +195,47 @@ def validate_distribution(plugin_root: Path, marketplace_root: Path) -> list[str
     test_path = plugin_root / "tests" / "test_kh_aw.py"
     if test_path.is_file():
         tests = re.findall(r"^\s+def test_[A-Za-z0-9_]+\(", test_path.read_text(encoding="utf-8"), re.MULTILINE)
-        if len(tests) < 37:
-            errors.append(f"enforcement test count is too low: {len(tests)} < 37")
+        if len(tests) < 50:
+            errors.append(f"enforcement test count is too low: {len(tests)} < 50")
 
     for path in marketplace_root.rglob("*"):
         rel_parts = set(path.relative_to(marketplace_root).parts)
+        if rel_parts & {"__pycache__", ".pytest_cache"}:
+            continue
         if rel_parts & FORBIDDEN_PARTS:
             errors.append(f"forbidden runtime/cache path in distribution: {path.relative_to(marketplace_root).as_posix()}")
         if path.is_file() and path.suffix == ".pyc":
             errors.append(f"compiled Python cache forbidden in distribution: {path.relative_to(marketplace_root).as_posix()}")
+
+    for path in plugin_root.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in INTERNAL_TEXT_SUFFIXES:
+            continue
+        relative = path.relative_to(plugin_root).as_posix()
+        if (
+            relative in INTERNAL_TEXT_EXCLUSIONS
+            or relative in USER_FACING_METADATA_FILES
+            or relative.endswith("/agents/openai.yaml")
+        ):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            errors.append(f"Codex-facing text is not valid UTF-8: {relative}")
+            continue
+        if any(ord(character) > 127 for character in text):
+            errors.append(f"Codex-facing package text must use English ASCII content: {relative}")
+
+    for skill in EXPECTED_SKILLS:
+        agent_path = skills_root / skill / "agents" / "openai.yaml"
+        if not agent_path.is_file():
+            continue
+        text = agent_path.read_text(encoding="utf-8")
+        display = re.search(r'^\s*display_name:\s*["\'](.+?)["\']\s*$', text, re.MULTILINE)
+        short = re.search(r'^\s*short_description:\s*["\'](.+?)["\']\s*$', text, re.MULTILINE)
+        prompt = re.search(r'^\s*default_prompt:\s*["\'](.+?)["\']\s*$', text, re.MULTILINE)
+        if not display or not short or not HANGUL_PATTERN.search(display.group(1)) or not HANGUL_PATTERN.search(short.group(1)):
+            errors.append(f"skill user-facing agent labels must be Korean: {skill}")
+        if not prompt or any(ord(character) > 127 for character in prompt.group(1)):
+            errors.append(f"skill Codex-facing default_prompt must be English ASCII: {skill}")
 
     return sorted(set(errors))

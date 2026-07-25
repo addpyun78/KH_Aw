@@ -8,7 +8,8 @@ function args(){const o={};for(let i=2;i<process.argv.length;i++){if(!process.ar
 function read(f){return JSON.parse(fs.readFileSync(f,'utf8'));}
 function write(f,v){fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,JSON.stringify(v,null,2)+'\n');}
 function resolveRun(root,p){return path.isAbsolute(p)?p:path.join(root,p);}
-const opt=args();const runRoot=path.resolve(String(opt['run-root']||''));const browser=String(opt.browser||'chromium');const threshold=Number(opt.threshold||0.35);
+const opt=args();const runRoot=path.resolve(String(opt['run-root']||''));const browser=String(opt.browser||'chromium');const threshold=Number(opt.threshold||0.08);
+if(!Number.isFinite(threshold)||threshold<0||threshold>0.10)throw new Error('visual regression threshold must be between 0 and 0.10');
 const design=read(path.join(runRoot,'design','design-ledger.json'));const browserResult=read(path.join(runRoot,'test','browser',browser,'result.json'));
 const actualMap=new Map(browserResult.pages.map(p=>[String(p.pageId),p.viewports.find(v=>v.id==='mobile')?.screenshot]));
 const outDir=path.join(runRoot,'test','visual-regression');fs.mkdirSync(outDir,{recursive:true});const checks=[];let failed=0;

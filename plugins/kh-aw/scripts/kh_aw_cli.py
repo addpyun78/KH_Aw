@@ -20,11 +20,12 @@ if str(SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPT_ROOT))
 
 from kh_aw.capabilities import record_capability
-from kh_aw.contracts import STAGES, create_run_contracts
+from kh_aw.contracts import STAGES, create_run_contracts, stage_status_passed
 from kh_aw.evidence import fetch_url_to_evidence, register_source
 from kh_aw.distribution import validate_distribution
 from kh_aw.gates import run_gate
 from kh_aw.inventory import build_inventory
+from kh_aw.page_inventory import build_page_candidates
 from kh_aw.integrity import build_package_manifest, validate_package_manifest
 from kh_aw.plugin_validate import validate_marketplace, validate_plugin
 from kh_aw.orchestration import (
@@ -35,6 +36,8 @@ from kh_aw.protection import create_protected_snapshot
 from kh_aw.run_lock import write_run_lock
 from kh_aw.repair import checkpoint_stage, close_stage_tickets, create_repair_ticket, deterministic_repair
 from kh_aw.security import scan_release_root
+from kh_aw.session_forensics import build_session_forensics
+from kh_aw.targeting import infer_target_pipeline
 from kh_aw.tooling import (
     bootstrap_tooling,
     command_forbidden,
@@ -57,10 +60,10 @@ from kh_aw.util import (
     write_json,
 )
 
-ENGINE_VERSION = "3.2.0"
+ENGINE_VERSION = "3.2.1"
 STAGE_ARTIFACTS = {
     "intake": ["contract/user-instructions.txt", "contract/requirements.json"],
-    "analyze": ["inventory/inventory-summary.json", "inventory/inventory.jsonl", "inventory/inventory.csv", "analysis/analysis-ledger.json"],
+    "analyze": ["inventory/inventory-summary.json", "inventory/inventory.jsonl", "inventory/inventory.csv", "inventory/page-candidates.json", "analysis/analysis-ledger.json"],
     "research": ["evidence/research-plan.json", "evidence/source-registry.json"],
     "design": ["design/page-inventory.json", "design/design-ledger.json"],
     "implement": ["implementation/implementation-ledger.json"],
@@ -84,7 +87,7 @@ def resolve_run(args: argparse.Namespace) -> Path:
 
 def earliest_incomplete(state: dict[str, Any]) -> str | None:
     for stage in STAGES:
-        if not str(state.get("stageStatus", {}).get(stage, "")).startswith("passed"):
+        if not stage_status_passed(state.get("stageStatus", {}).get(stage, "")):
             return stage
     return None
 
@@ -105,7 +108,7 @@ def _pass_stage(run_root: Path, state: dict[str, Any], stage: str, status: str, 
     index = STAGES.index(stage)
     next_stage = STAGES[index + 1] if index + 1 < len(STAGES) else None
     state["currentStage"] = next_stage or "release"
-    state["status"] = "active" if next_stage else "complete"
+    state["status"] = "active" if next_stage else "release-passed-awaiting-receipt"
     if next_stage:
         ensure_agent_plan(run_root, state, next_stage, force=True)
     gate_path = run_root / "reports" / f"gate-{stage}.json"
@@ -113,8 +116,8 @@ def _pass_stage(run_root: Path, state: dict[str, Any], stage: str, status: str, 
     checkpoint = checkpoint_stage(run_root, stage, _stage_artifacts(run_root, stage))
     write_json(run_root / "next-action.json", {
         "schemaVersion": "3.0", "updatedAt": utc_now(), "stage": next_stage,
-        "status": "complete" if next_stage is None else "active",
-        "instruction": "모든 단계가 통과했습니다." if next_stage is None else f"다음 단계 {next_stage}의 실제 산출물을 작성하고 advance를 실행합니다.",
+        "status": "awaiting-release-receipt" if next_stage is None else "active",
+        "instruction": 'All stages passed.' if next_stage is None else f"'Create physical evidence for the next stage ('{next_stage}'), then run advance.'",
     })
     save_state(run_root, state)
     return {"nextStage": next_stage, "closedTickets": closed, "checkpoint": checkpoint, "gate": gate}
@@ -132,6 +135,14 @@ def _exercise_stage_capabilities(run_root: Path, state: dict[str, Any], stage: s
         capability_id = str(definition.get("id", ""))
         existing = records.get(capability_id)
         if isinstance(existing, dict) and existing.get("mode") == "native" and existing.get("status") == "verified":
+            continue
+        if policy.get("requiredEvidenceMode") == "native":
+            results.append({
+                "capabilityId": capability_id,
+                "status": "native-unavailable",
+                "preferredSlash": definition.get("preferredSlash"),
+                "reason": "The active Codex stage owner must use the slash command and register native evidence.",
+            })
             continue
         try:
             results.append(exercise_capability(run_root, state, capability_id))
@@ -165,7 +176,13 @@ def cmd_init(args: argparse.Namespace) -> int:
         raise ValueError("project/output/workspace root must not be inside the provided analysis folder")
 
     instructions_file = safe_resolve(args.instructions_file, requested_project)
-    instructions = instructions_file.read_text(encoding="utf-8", errors="replace")
+    instructions = instructions_file.read_text(encoding="utf-8")
+    inferred_target = infer_target_pipeline(instructions, analysis_folder or requested_project)
+    target = args.target
+    if args.target_auto or args.target == "unknown-needs-confirmation":
+        target = str(inferred_target["targetPipeline"])
+    if target == "unknown-needs-confirmation":
+        raise ValueError("targetPipeline could not be inferred; rerun init with an explicit --target")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_id = f"{stamp}-{slug(args.name or project_root.name)}"
     run_root = workspace_root / "runs" / run_id
@@ -175,9 +192,10 @@ def cmd_init(args: argparse.Namespace) -> int:
     internal_instructions = run_root / "contract" / "user-instructions.txt"
     internal_instructions.parent.mkdir(parents=True, exist_ok=True)
     internal_instructions.write_text(instructions, encoding="utf-8", newline="\n")
-    contracts = create_run_contracts(run_root, instructions, args.target)
+    contracts = create_run_contracts(run_root, instructions, target)
     source_root = analysis_folder or project_root
     inventory = build_inventory(source_root, run_root / "inventory", include_all=True, excluded_roots=(workspace_root,))
+    page_candidates = build_page_candidates(source_root, run_root / "inventory" / "page-candidates.json")
     protection = create_protected_snapshot(analysis_folder, run_root) if analysis_folder else None
     state = {
         "schemaVersion": "3.0",
@@ -195,10 +213,15 @@ def cmd_init(args: argparse.Namespace) -> int:
         "analysisFolder": analysis_folder.as_posix() if analysis_folder else "",
         "analysisSourceRoot": source_root.as_posix(),
         "instructionsFile": internal_instructions.as_posix(),
-        "targetPipeline": args.target,
+        "targetPipeline": target,
+        "targetInference": inferred_target,
         "stageStatus": {stage: "pending" for stage in STAGES},
         "contracts": contracts,
         "inventory": inventory,
+        "pageCandidates": {
+            "path": (run_root / "inventory" / "page-candidates.json").as_posix(),
+            "candidateCount": page_candidates.get("candidateCount", 0),
+        },
         "protection": {"enabled": bool(protection), "archive": protection.get("archive") if protection else ""},
         "repair": {"globalAttempt": 0, "signatures": {}, "activeTicket": ""},
     }
@@ -224,17 +247,20 @@ def cmd_init(args: argparse.Namespace) -> int:
             save_state(run_root, state)
             passed = {"ticket": ticket, "gate": second}
             status = "initialized-repair-required-nonterminal"
+    initialized_ok = not status.endswith("repair-required-nonterminal")
     emit({
-        "ok": True,
+        "ok": initialized_ok,
         "status": status,
         "runRoot": run_root.as_posix(),
         "projectRoot": project_root.as_posix(),
+        "targetPipeline": target,
+        "targetInference": inferred_target,
         "analysisMode": state["analysisMode"],
         "analysisFolderProtected": bool(protection),
         "inventoryFileCount": inventory.get("fileCount"),
         "stageResult": passed,
     })
-    return 0
+    return 0 if initialized_ok else 1
 
 
 def cmd_status(args: argparse.Namespace) -> int:
@@ -245,8 +271,38 @@ def cmd_status(args: argparse.Namespace) -> int:
         report = read_json(run_root / "reports" / f"gate-{stage}.json", None)
         if report:
             reports[stage] = {"pass": report.get("pass"), "issueCount": report.get("issueCount"), "checkedAt": report.get("checkedAt")}
-    emit({"runRoot": run_root.as_posix(), "state": state, "gateSummary": reports, "nextAction": read_json(run_root / "next-action.json", {})})
-    return 0
+    receipt_check = {"required": state.get("status") == "complete", "valid": None, "issues": []}
+    if receipt_check["required"]:
+        receipt_path = run_root / "release" / "release-receipt.json"
+        receipt = read_json(receipt_path, None)
+        if not isinstance(receipt, dict):
+            receipt_check["issues"].append("release receipt is missing")
+        else:
+            if receipt.get("status") != "complete" or receipt.get("runId") != state.get("runId"):
+                receipt_check["issues"].append("release receipt identity or status is invalid")
+            if state.get("releaseReceiptSha256") != sha256_file(receipt_path):
+                receipt_check["issues"].append("release receipt hash does not match state")
+            if any(not stage_status_passed(state.get("stageStatus", {}).get(stage, "")) for stage in STAGES):
+                receipt_check["issues"].append("one or more current stage states are not exact approved passed statuses")
+            if len(receipt.get("gateReports", [])) != len(STAGES):
+                receipt_check["issues"].append("release receipt does not contain exactly eight gate bindings")
+            for stage in STAGES:
+                report_path = run_root / "reports" / f"gate-{stage}.json"
+                report = read_json(report_path, None)
+                receipt_row = next((row for row in receipt.get("gateReports", []) if row.get("stage") == stage), None)
+                if not isinstance(report, dict) or report.get("pass") is not True or report.get("issueCount") != 0:
+                    receipt_check["issues"].append(f"{stage} gate is not a clean pass")
+                elif not isinstance(receipt_row, dict) or receipt_row.get("sha256") != sha256_file(report_path):
+                    receipt_check["issues"].append(f"{stage} gate hash is not bound to the receipt")
+        receipt_check["valid"] = not receipt_check["issues"]
+    emit({
+        "runRoot": run_root.as_posix(),
+        "state": state,
+        "gateSummary": reports,
+        "completionReceipt": receipt_check,
+        "nextAction": read_json(run_root / "next-action.json", {}),
+    })
+    return 0 if receipt_check["valid"] is not False else 1
 
 
 def cmd_gate(args: argparse.Namespace) -> int:
@@ -254,7 +310,7 @@ def cmd_gate(args: argparse.Namespace) -> int:
     state = load_state(run_root)
     result = run_gate(run_root, state, args.stage, enforce_order=not args.ignore_order)
     emit(result)
-    return 0 if result["pass"] or not args.strict else 1
+    return 0 if result["pass"] else 1
 
 
 def _ensure_design_mockup_render(run_root: Path, state: dict[str, Any]) -> dict[str, Any] | None:
@@ -321,6 +377,9 @@ def _refresh_review_from_browser(run_root: Path) -> dict[str, Any] | None:
     ]
     design = read_json(run_root / "design" / "design-ledger.json", {})
     design_map = {str(item.get("pageId")): item for item in design.get("pages", []) if isinstance(item, dict)}
+    existing_review = read_json(run_root / "review" / "review.json", {})
+    if existing_review.get("decision") == "approved" and existing_review.get("pages"):
+        return existing_review
     pages = []
     all_pass = True
     for page in browser.get("pages", []):
@@ -337,25 +396,30 @@ def _refresh_review_from_browser(run_root: Path) -> dict[str, Any] | None:
             "actualScreenshotPath": screenshot.resolve().relative_to(run_root.resolve()).as_posix() if screenshot.is_file() else "",
             "actualScreenshotSha256": sha256_file(screenshot) if screenshot.is_file() else "",
             "mockupPath": str(spec.get("mockupPath", "")),
-            "structureMatched": page_pass,
-            "fieldsMatched": page_pass,
-            "logicMatched": page_pass,
-            "featuresMatched": page_pass,
+            "structureMatched": False,
+            "fieldsMatched": False,
+            "logicMatched": False,
+            "featuresMatched": False,
             "imagesMatched": page_pass and not page.get("brokenImages"),
-            "motionMatched": page_pass,
-            "statesMatched": page_pass,
+            "heroMatched": False,
+            "motionMatched": False,
+            "typographyMatched": False,
+            "colorMatched": False,
+            "iconMatched": False,
+            "koreanUiMatched": False,
+            "statesMatched": False,
             "overlapFree": page_pass,
             "responsivePass": page_pass,
             "accessibilityPass": page_pass and all(item.get("severeCount", 1) == 0 for item in page.get("axe", [])),
-            "issues": [],
-            "pass": page_pass,
+            "issues": [{"severity": "major", "status": "open", "message": "Independent semantic and visual comparison is required."}],
+            "pass": False,
             "evidencePath": browser_path.relative_to(run_root).as_posix(),
             "evidenceSha256": sha256_file(browser_path),
             "toolExecutionIds": chromium_execution_ids,
             "implementationGatePath": "reports/gate-implement.json",
             "implementationGateSha256": sha256_file(run_root / "reports" / "gate-implement.json") if (run_root / "reports" / "gate-implement.json").is_file() else "",
         })
-    review = read_json(run_root / "review" / "review.json", {})
+    review = existing_review
     review["pages"] = pages
     review["crossPageConsistency"] = [{
         "id": "browser-runtime-cross-page",
@@ -364,8 +428,8 @@ def _refresh_review_from_browser(run_root: Path) -> dict[str, Any] | None:
         "evidenceSha256": sha256_file(browser_path),
         "toolExecutionIds": chromium_execution_ids,
     }]
-    review["unresolvedIssues"] = [] if all_pass else [{"severity": "major", "status": "open", "message": "Browser review has failures."}]
-    review["decision"] = "approved" if all_pass and len(pages) == len(design_map) else "pending"
+    review["unresolvedIssues"] = [{"severity": "major", "status": "open", "message": "Independent page-by-page semantic and visual review has not been registered."}]
+    review["decision"] = "pending"
     write_json(run_root / "review" / "review.json", review)
     return review
 
@@ -410,12 +474,12 @@ def cmd_advance(args: argparse.Namespace) -> int:
         save_state(run_root, state)
         order_gate = {
             "schemaVersion": "3.0", "checkedAt": utc_now(), "stage": requested, "pass": False, "issueCount": 1,
-            "issues": [{"code": "STAGE_ORDER_VIOLATION", "severity": "major", "message": "이전 단계 우회가 차단되었습니다.", "evidence": {"requestedStage": requested, "routedStage": stage}}],
+            "issues": [{"code": "STAGE_ORDER_VIOLATION", "severity": "major", "message": 'Previous-stage bypass was blocked.', "evidence": {"requestedStage": requested, "routedStage": stage}}],
         }
         deterministic = deterministic_repair(run_root, state, stage, order_gate["issues"])
         ticket = create_repair_ticket(run_root, state, stage, order_gate, deterministic)
         emit({"ok": False, "status": "repair-required-nonterminal", "requestedStage": requested, "stage": stage, "ticket": ticket, "gate": order_gate})
-        return 0 if not args.strict else 1
+        return 1
 
     ensure_agent_plan(run_root, state, stage, force=False)
     _automatic_stage_tools(run_root, state, stage)
@@ -425,6 +489,7 @@ def cmd_advance(args: argparse.Namespace) -> int:
         passed = _pass_stage(run_root, state, stage, "passed", result)
         if stage == "release":
             receipt = create_release_receipt(run_root, state)
+            _mark_run_complete(run_root, state, receipt)
             passed["releaseReceipt"] = receipt
         emit({"ok": True, "status": "stage-passed", "stage": stage, **passed})
         return 0
@@ -436,7 +501,9 @@ def cmd_advance(args: argparse.Namespace) -> int:
     if second["pass"]:
         passed = _pass_stage(run_root, state, stage, "passed-after-deterministic-repair", second)
         if stage == "release":
-            passed["releaseReceipt"] = create_release_receipt(run_root, state)
+            receipt = create_release_receipt(run_root, state)
+            _mark_run_complete(run_root, state, receipt)
+            passed["releaseReceipt"] = receipt
         emit({"ok": True, "status": "stage-passed-after-auto-repair", "stage": stage, "repair": deterministic, **passed})
         return 0
 
@@ -447,19 +514,31 @@ def cmd_advance(args: argparse.Namespace) -> int:
         "ok": False,
         "status": "repair-required-nonterminal",
         "stage": stage,
-        "message": "시스템을 종료하지 않았습니다. 실제 원인 파일·증거를 수리한 뒤 같은 advance를 계속 실행합니다.",
+        "message": 'The stage remains blocked. Repair the physical root-cause files and evidence, then rerun the same advance command.',
         "ticket": ticket,
         "gate": second,
     })
-    return 0 if not args.strict else 1
+    return 1
 
 
 def create_release_receipt(run_root: Path, state: dict[str, Any]) -> dict[str, Any]:
     gate_files = []
     for stage in STAGES:
         path = run_root / "reports" / f"gate-{stage}.json"
-        if path.is_file():
-            gate_files.append({"stage": stage, "path": path.relative_to(run_root).as_posix(), "sha256": sha256_file(path)})
+        report = read_json(path, None)
+        if not path.is_file() or not isinstance(report, dict):
+            raise RuntimeError(f"release receipt blocked: missing gate report for {stage}")
+        if report.get("stage") != stage or report.get("pass") is not True or report.get("issueCount") != 0 or report.get("issues") != []:
+            raise RuntimeError(f"release receipt blocked: {stage} gate is not a clean pass")
+        if not stage_status_passed(state.get("stageStatus", {}).get(stage, "")):
+            raise RuntimeError(f"release receipt blocked: {stage} state is not an approved passed status")
+        gate_files.append({
+            "stage": stage,
+            "path": path.relative_to(run_root).as_posix(),
+            "sha256": sha256_file(path),
+            "pass": True,
+            "issueCount": 0,
+        })
     receipt = {
         "schemaVersion": "3.0",
         "createdAt": utc_now(),
@@ -482,13 +561,31 @@ def create_release_receipt(run_root: Path, state: dict[str, Any]) -> dict[str, A
         ],
         "analysisMode": state.get("analysisMode"),
         "projectRoot": state.get("projectRoot"),
-        "rule": "이 영수증은 모든 물리 게이트가 통과한 경우에만 엔진이 생성합니다.",
+        "rule": "The engine creates this receipt only after all eight physical gates pass with zero issues.",
     }
     path = run_root / "release" / "release-receipt.json"
     write_json(path, receipt)
     receipt["path"] = path.as_posix()
     receipt["sha256"] = sha256_file(path)
     return receipt
+
+
+def _mark_run_complete(run_root: Path, state: dict[str, Any], receipt: dict[str, Any]) -> None:
+    receipt_path = Path(str(receipt.get("path", "")))
+    if not receipt_path.is_file() or receipt.get("sha256") != sha256_file(receipt_path):
+        raise RuntimeError("run completion blocked: release receipt is missing or changed")
+    state["status"] = "complete"
+    state["currentStage"] = "release"
+    state["releaseReceiptPath"] = receipt_path.as_posix()
+    state["releaseReceiptSha256"] = receipt["sha256"]
+    save_state(run_root, state)
+    write_json(run_root / "next-action.json", {
+        "schemaVersion": "3.0",
+        "updatedAt": utc_now(),
+        "stage": None,
+        "status": "complete",
+        "instruction": "All stages passed and the immutable release receipt was created.",
+    })
 
 
 def cmd_finalize(args: argparse.Namespace) -> int:
@@ -507,13 +604,14 @@ def cmd_finalize(args: argparse.Namespace) -> int:
         state["stageStatus"][owner] = "repairing"
         save_state(run_root, state)
         emit({"ok": False, "status": "repair-required-nonterminal", "stage": owner, "failedStages": [item["stage"] for item in failed], "ticket": ticket})
-        return 1 if args.strict else 0
+        return 1
     for stage in STAGES:
         state["stageStatus"][stage] = "passed-final-verification"
-    state["status"] = "complete"
+    state["status"] = "release-passed-awaiting-receipt"
     state["currentStage"] = "release"
     save_state(run_root, state)
     receipt = create_release_receipt(run_root, state)
+    _mark_run_complete(run_root, state, receipt)
     emit({"ok": True, "status": "complete", "receipt": receipt})
     return 0
 
@@ -548,6 +646,7 @@ def cmd_record_subagent(args: argparse.Namespace) -> int:
         session_id=args.session_id,
         invocation=args.invocation,
         invocation_receipt_file=safe_resolve(args.invocation_receipt_file, run_root),
+        session_evidence_file=safe_resolve(args.session_evidence_file),
         evidence_file=safe_resolve(args.evidence_file, run_root),
         review_of_worker_ids=args.review_of or [],
         task_id=args.task_id or "",
@@ -568,6 +667,7 @@ def cmd_aggregate_agents(args: argparse.Namespace) -> int:
         stage=args.stage,
         lead_agent_id=args.lead_agent_id,
         lead_session_id=args.lead_session_id,
+        session_evidence_file=safe_resolve(args.session_evidence_file),
         evidence_file=safe_resolve(args.evidence_file, run_root),
         accepted_worker_ids=accepted,
         resolved_conflicts=args.resolved_conflict or [],
@@ -607,9 +707,13 @@ def cmd_register_source(args: argparse.Namespace) -> int:
         http_status=args.http_status,
         project_fit_reason=args.project_fit_reason or "",
         license_note=args.license_note or "",
+        retrieval_mode="native-browser-extraction",
+        retrieval_session_id=args.session_id,
+        retrieval_evidence_file=safe_resolve(args.retrieval_evidence_file, run_root),
     )
-    emit({"ok": True, "source": record})
-    return 0
+    accepted = record.get("accepted") is True
+    emit({"ok": accepted, "source": record})
+    return 0 if accepted else 1
 
 
 def cmd_fetch_source(args: argparse.Namespace) -> int:
@@ -624,13 +728,22 @@ def cmd_fetch_source(args: argparse.Namespace) -> int:
         license_note=args.license_note or "",
         timeout=args.timeout,
     )
-    emit({"ok": True, "source": record})
-    return 0
+    accepted = record.get("accepted") is True
+    emit({"ok": accepted, "source": record})
+    return 0 if accepted else 1
 
 
 def cmd_record_command(args: argparse.Namespace) -> int:
     run_root = resolve_run(args)
     state = load_state(run_root)
+    required_ids = set(required_tool_ids(
+        str(state.get("targetPipeline", "web-responsive")),
+        Path(str(state.get("projectRoot", "."))).resolve(),
+    ))
+    if (args.tool_id or "custom-command") in required_ids:
+        raise ValueError(
+            f"{args.tool_id} is a required tool and must be executed through run-toolchain"
+        )
     record = execute_tool(
         run_root,
         state,
@@ -641,7 +754,7 @@ def cmd_record_command(args: argparse.Namespace) -> int:
         artifacts=args.artifact or [],
     )
     emit({"ok": record["exitCode"] == 0, "execution": record})
-    return 0 if record["exitCode"] == 0 or not args.strict else record["exitCode"]
+    return 0 if record["exitCode"] == 0 else max(1, int(record["exitCode"]))
 
 
 def cmd_bootstrap_tools(args: argparse.Namespace) -> int:
@@ -699,6 +812,7 @@ def cmd_record_native(args: argparse.Namespace) -> int:
         invocation=args.invocation,
         tool_execution_ids=args.tool_execution_id or [],
         session_id=args.session_id or "",
+        session_evidence_file=safe_resolve(args.session_evidence_file),
     )
     emit({"ok": True, "record": record})
     return 0
@@ -707,6 +821,16 @@ def cmd_record_native(args: argparse.Namespace) -> int:
 def cmd_exercise_native(args: argparse.Namespace) -> int:
     run_root = resolve_run(args)
     state = load_state(run_root)
+    policy = read_json(run_root / "contract" / "native-capability-policy.json", {})
+    required_ids = {
+        str(item.get("id"))
+        for item in policy.get("capabilities", [])
+        if isinstance(item, dict) and item.get("required") is True
+    }
+    if args.capability_id in required_ids and policy.get("requiredEvidenceMode") == "native":
+        raise ValueError(
+            f"{args.capability_id} requires native Codex slash evidence; exercise-native cannot satisfy this gate"
+        )
     record = exercise_capability(run_root, state, args.capability_id)
     emit({"ok": True, "record": record})
     return 0
@@ -912,7 +1036,22 @@ def cmd_run_toolchain(args: argparse.Namespace) -> int:
                 results.append({"toolId": tool_id, "status": "configuration-required", "exitCode": 2})
                 processed.add(tool_id); continue
             try:
-                results.append(execute_tool(run_root, state, tool_id=tool_id, command=command, cwd=project, timeout=args.timeout))
+                artifact_globs: list[str] = []
+                if tool_id == "web-build":
+                    artifact_globs = ["dist", "build", "out", ".next"]
+                elif tool_id in {"android-gradle-build", "flutter-build-apk"}:
+                    artifact_globs = ["**/build/outputs/apk/**/*.apk", "**/build/app/outputs/flutter-apk/*.apk"]
+                elif tool_id == "ios-build":
+                    artifact_globs = ["**/build/**/*.app", "**/DerivedData/**/Build/Products/**/*.app"]
+                results.append(execute_tool(
+                    run_root,
+                    state,
+                    tool_id=tool_id,
+                    command=command,
+                    cwd=project,
+                    timeout=args.timeout,
+                    artifact_globs=artifact_globs,
+                ))
             except Exception as exc:
                 results.append({"toolId": tool_id, "status": "blocked", "exitCode": 2, "error": str(exc)})
             processed.add(tool_id)
@@ -941,7 +1080,7 @@ def cmd_run_toolchain(args: argparse.Namespace) -> int:
     write_json(report_path, report)
     _refresh_tool_evidence(run_root, results)
     emit({"ok": all(item.get("exitCode") == 0 for item in results), "results": results})
-    return 0 if all(item.get("exitCode") == 0 for item in results) or not args.strict else 1
+    return 0 if all(item.get("exitCode") == 0 for item in results) else 1
 
 
 def cmd_scan_security(args: argparse.Namespace) -> int:
@@ -954,7 +1093,18 @@ def cmd_scan_security(args: argparse.Namespace) -> int:
     release["securityScan"] = result
     write_json(release_path, release)
     emit(result)
-    return 0 if result["status"] == "passed" or not args.strict else 1
+    return 0 if result["status"] == "passed" else 1
+
+
+def cmd_audit_session(args: argparse.Namespace) -> int:
+    run_root = resolve_run(args)
+    result = build_session_forensics(
+        run_root,
+        safe_resolve(args.session_jsonl),
+        args.session_id,
+    )
+    emit({"ok": result.get("completionTruth") == "verified", "sessionForensics": result})
+    return 0 if result.get("completionTruth") == "verified" else 1
 
 
 def cmd_build_package_manifest(args: argparse.Namespace) -> int:
@@ -980,7 +1130,8 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--analysis-folder")
     init.add_argument("--output-root")
     init.add_argument("--instructions-file", required=True)
-    init.add_argument("--target", choices=["web-responsive", "app-mobile-webview", "android-native", "ios-native", "cross-platform"], default="web-responsive")
+    init.add_argument("--target", choices=["web-responsive", "app-mobile-webview", "android-native", "ios-native", "cross-platform", "unknown-needs-confirmation"], default="unknown-needs-confirmation")
+    init.add_argument("--target-auto", action="store_true", help="Infer and lock the target pipeline from instructions and project files")
     init.add_argument("--name")
     init.set_defaults(func=cmd_init)
     for name, func in [("status", cmd_status), ("gate", cmd_gate), ("advance", cmd_advance), ("finalize", cmd_finalize)]:
@@ -1009,8 +1160,9 @@ def parser() -> argparse.ArgumentParser:
     record_agent.add_argument("--task-id")
     record_agent.add_argument("--session-id", required=True)
     record_agent.add_argument("--invocation", required=True)
-    record_agent.add_argument("--delegation-mode", choices=["native-agents", "independent-codex-task"], default="native-agents")
+    record_agent.add_argument("--delegation-mode", choices=["native-agents"], default="native-agents")
     record_agent.add_argument("--invocation-receipt-file", required=True)
+    record_agent.add_argument("--session-evidence-file", required=True)
     record_agent.add_argument("--evidence-file", required=True)
     record_agent.add_argument("--review-of", action="append")
     record_agent.set_defaults(func=cmd_record_subagent)
@@ -1019,6 +1171,7 @@ def parser() -> argparse.ArgumentParser:
     aggregate_agents.add_argument("--stage", choices=STAGES, required=True)
     aggregate_agents.add_argument("--lead-agent-id", required=True)
     aggregate_agents.add_argument("--lead-session-id", required=True)
+    aggregate_agents.add_argument("--session-evidence-file", required=True)
     aggregate_agents.add_argument("--evidence-file", required=True)
     aggregate_agents.add_argument("--accepted-worker-id", action="append")
     aggregate_agents.add_argument("--resolved-conflict", action="append")
@@ -1038,6 +1191,8 @@ def parser() -> argparse.ArgumentParser:
     reg.add_argument("--http-status", type=int, default=200)
     reg.add_argument("--project-fit-reason", required=True)
     reg.add_argument("--license-note")
+    reg.add_argument("--session-id", required=True)
+    reg.add_argument("--retrieval-evidence-file", required=True)
     reg.set_defaults(func=cmd_register_source)
     fetch = sub.add_parser("fetch-source", help="Fetch and register an actual page body")
     fetch.add_argument("--run-root", required=True)
@@ -1078,6 +1233,7 @@ def parser() -> argparse.ArgumentParser:
     native.add_argument("--invocation", required=True)
     native.add_argument("--tool-execution-id", action="append")
     native.add_argument("--session-id", required=True)
+    native.add_argument("--session-evidence-file", required=True)
     native.set_defaults(func=cmd_record_native)
     native_fallback = sub.add_parser("exercise-native", help="Execute a physical fallback for a Codex native/slash capability")
     native_fallback.add_argument("--run-root", required=True)
@@ -1094,6 +1250,11 @@ def parser() -> argparse.ArgumentParser:
     scan.add_argument("--root")
     scan.add_argument("--strict", action="store_true")
     scan.set_defaults(func=cmd_scan_security)
+    audit_session = sub.add_parser("audit-session", help="Parse and bind the physical Codex session JSONL to completion evidence")
+    audit_session.add_argument("--run-root", required=True)
+    audit_session.add_argument("--session-jsonl", required=True)
+    audit_session.add_argument("--session-id", required=True)
+    audit_session.set_defaults(func=cmd_audit_session)
     integrity = sub.add_parser("build-package-manifest", help="Generate the physical package SHA-256 manifest")
     integrity.add_argument("--plugin-root")
     integrity.set_defaults(func=cmd_build_package_manifest)

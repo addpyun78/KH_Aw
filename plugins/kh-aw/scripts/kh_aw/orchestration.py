@@ -88,9 +88,7 @@ def orchestration_policy() -> dict[str, Any]:
             "releaseArtifacts.count",
         ],
         "rule": (
-            "각 단계 대장 AI는 독립 하위 AI를 최소 2개, 최대 60개 범위에서 프로젝트 규모에 맞게 "
-            "동적으로 배정한다. 60개 고정 호출은 금지한다. 실제 독립 세션·물리 산출물·SHA-256·교차검토·"
-            "대장 AI 집계 증거가 없으면 단계는 통과하지 않는다."
+            'Each stage lead dynamically assigns 2 to 60 independent Codex workers based on project scale. Fixed 60-worker fan-out is forbidden. Physical sessions, unique outputs, SHA-256 evidence, cross-review, and lead aggregation are mandatory.'
         ),
     }
 
@@ -309,7 +307,7 @@ def canonical_agent_plan(
         "leadAgent": {
             "agentId": f"{stage.upper()}-LEAD",
             "role": f"{stage}-lead-agent",
-            "responsibility": "하위 AI 배정, 중복 제거, 충돌 해결, 누락 확인, 최종 단계 산출물 집계",
+            "responsibility": 'Assign workers, remove duplication, resolve conflicts, verify omissions, and aggregate final stage evidence.',
         },
         "minimumSubAgents": MIN_SUBAGENTS,
         "maximumSubAgents": MAX_SUBAGENTS,
@@ -430,6 +428,38 @@ def ensure_agent_plan(
     return plan
 
 
+def _validate_codex_session_evidence(
+    session_evidence_file: Path,
+    *,
+    session_id: str,
+    task_id: str,
+) -> tuple[str, str, int]:
+    path = session_evidence_file.expanduser().resolve()
+    normalized = path.as_posix().lower()
+    if "/.codex/sessions/" not in normalized or not path.name.lower().startswith("rollout-") or path.suffix.lower() != ".jsonl":
+        raise ValueError("subagent session evidence must be a physical Codex rollout JSONL under .codex/sessions")
+    if not path.is_file() or path.stat().st_size < 128:
+        raise ValueError("subagent Codex session JSONL is missing or too small")
+    event_count = 0
+    session_found = session_id in path.name
+    task_found = False
+    with path.open("r", encoding="utf-8", errors="strict") as stream:
+        for line in stream:
+            if not line.strip():
+                continue
+            event_count += 1
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError("subagent Codex session JSONL contains invalid events") from exc
+            serialized = json.dumps(event, ensure_ascii=False)
+            session_found = session_found or session_id in serialized
+            task_found = task_found or task_id in serialized
+    if not session_found or not task_found:
+        raise ValueError("subagent Codex session JSONL is not bound to the session and immutable task")
+    return path.as_posix(), sha256_file(path), event_count
+
+
 def _load_invocation_receipt(
     run_root: Path,
     *,
@@ -439,6 +469,8 @@ def _load_invocation_receipt(
     session_id: str,
     invocation: str,
     delegation_mode: str,
+    session_evidence_path: str,
+    session_evidence_sha256: str,
 ) -> tuple[dict[str, Any], str, str]:
     receipt_file = receipt_file.expanduser().resolve()
     try:
@@ -462,6 +494,8 @@ def _load_invocation_receipt(
         "delegationMode": delegation_mode,
         "invocation": invocation.strip(),
         "dispatchContractSha256": assignment.get("dispatchContractSha256"),
+        "sessionEvidencePath": session_evidence_path,
+        "sessionEvidenceSha256": session_evidence_sha256,
     }
     for key, value in expected.items():
         if receipt.get(key) != value:
@@ -479,6 +513,7 @@ def record_subagent_result(
     session_id: str,
     invocation: str,
     invocation_receipt_file: Path,
+    session_evidence_file: Path,
     evidence_file: Path,
     review_of_worker_ids: list[str] | None = None,
     task_id: str = "",
@@ -486,9 +521,9 @@ def record_subagent_result(
 ) -> dict[str, Any]:
     if stage not in STAGES:
         raise ValueError(f"unknown stage: {stage}")
-    if delegation_mode not in {"native-agents", "independent-codex-task"}:
-        raise ValueError("delegation_mode must be native-agents or independent-codex-task")
-    if delegation_mode == "native-agents" and "/agents" not in invocation:
+    if delegation_mode != "native-agents":
+        raise ValueError("delegation_mode must be native-agents")
+    if "/agents" not in invocation:
         raise ValueError("native-agents invocation must contain /agents")
     if len(session_id.strip()) < 8:
         raise ValueError("independent subagent session ID must be at least 8 characters")
@@ -502,6 +537,11 @@ def record_subagent_result(
     dispatch_path = run_root / str(assignment.get("dispatchContractPath", ""))
     if not dispatch_path.is_file() or sha256_file(dispatch_path) != assignment.get("dispatchContractSha256"):
         raise ValueError("immutable dispatch contract is missing or modified")
+    session_evidence_path, session_evidence_sha256, session_event_count = _validate_codex_session_evidence(
+        session_evidence_file,
+        session_id=session_id.strip(),
+        task_id=str(assignment.get("taskId", "")),
+    )
     receipt, receipt_rel, receipt_sha = _load_invocation_receipt(
         run_root,
         receipt_file=invocation_receipt_file,
@@ -510,6 +550,8 @@ def record_subagent_result(
         session_id=session_id,
         invocation=invocation,
         delegation_mode=delegation_mode,
+        session_evidence_path=session_evidence_path,
+        session_evidence_sha256=session_evidence_sha256,
     )
     evidence_file = evidence_file.resolve()
     if not evidence_file.is_file() or evidence_file.stat().st_size < 96:
@@ -555,6 +597,9 @@ def record_subagent_result(
         "delegationMode": delegation_mode,
         "invocation": invocation.strip(),
         "sessionId": session_id.strip(),
+        "sessionEvidencePath": session_evidence_path,
+        "sessionEvidenceSha256": session_evidence_sha256,
+        "sessionEvidenceEventCount": session_event_count,
         "status": "completed",
         "dispatchContractPath": assignment.get("dispatchContractPath"),
         "dispatchContractSha256": assignment.get("dispatchContractSha256"),
@@ -584,6 +629,7 @@ def record_lead_aggregation(
     stage: str,
     lead_agent_id: str,
     lead_session_id: str,
+    session_evidence_file: Path,
     evidence_file: Path,
     accepted_worker_ids: list[str],
     resolved_conflicts: list[str] | None = None,
@@ -620,11 +666,19 @@ def record_lead_aggregation(
     session_ids = {str(item.get("sessionId")) for item in ledger.get("workers", []) if isinstance(item, dict)}
     if lead_session_id in session_ids:
         raise ValueError("lead agent session must be independent from all worker sessions")
+    lead_session_path, lead_session_sha256, lead_session_event_count = _validate_codex_session_evidence(
+        session_evidence_file,
+        session_id=lead_session_id.strip(),
+        task_id=stage,
+    )
     aggregation = {
         "schemaVersion": "3.2",
         "stage": stage,
         "leadAgentId": lead_agent_id.strip(),
         "leadSessionId": lead_session_id.strip(),
+        "sessionEvidencePath": lead_session_path,
+        "sessionEvidenceSha256": lead_session_sha256,
+        "sessionEvidenceEventCount": lead_session_event_count,
         "planFingerprint": plan.get("planFingerprint"),
         "leadContractPath": lead_contract_path.relative_to(run_root).as_posix(),
         "leadContractSha256": lead_contract_sha,
@@ -655,6 +709,8 @@ def _receipt_matches_worker(run_root: Path, worker: dict[str, Any], assignment: 
         "sessionId": worker.get("sessionId"), "delegationMode": worker.get("delegationMode"),
         "invocation": worker.get("invocation"),
         "dispatchContractSha256": assignment.get("dispatchContractSha256"),
+        "sessionEvidencePath": worker.get("sessionEvidencePath"),
+        "sessionEvidenceSha256": worker.get("sessionEvidenceSha256"),
     }
     return isinstance(receipt, dict) and all(receipt.get(key) == value for key, value in expected.items()) and bool(receipt.get("issuedAt"))
 
@@ -671,17 +727,17 @@ def orchestration_issues(run_root: Path, state: dict[str, Any], stage: str) -> l
         "leadAggregationRequired", "leadScaleJustificationRequired", "everyStageRequired",
     ]:
         if policy.get(key) != canonical_policy.get(key):
-            issues.append({"code": "SUBAGENT_POLICY_TAMPERED", "message": "하위 AI 강제 정책이 변경됐습니다.", "field": key})
+            issues.append({"code": "SUBAGENT_POLICY_TAMPERED", "message": 'KH_Aw blocked this operation: subagent policy tampered.', "field": key})
     plan_path = run_root / "orchestration" / stage / "agent-plan.json"
     plan = read_json(plan_path, None)
     if not isinstance(plan, dict):
-        return issues + [{"code": "SUBAGENT_PLAN_MISSING", "message": "단계별 하위 AI 배정 계획이 없습니다.", "stage": stage}]
+        return issues + [{"code": "SUBAGENT_PLAN_MISSING", "message": 'KH_Aw blocked this operation: subagent plan missing.', "stage": stage}]
     safety_floor, _, _ = recommended_subagent_count(run_root, state, stage)
     actual_count = int(plan.get("selectedSubAgents", plan.get("recommendedSubAgents", 0)) or 0)
     if actual_count < MIN_SUBAGENTS or actual_count > MAX_SUBAGENTS:
-        issues.append({"code": "SUBAGENT_COUNT_OUT_OF_RANGE", "message": "하위 AI 수는 최소 2개, 최대 60개여야 합니다.", "actual": actual_count})
+        issues.append({"code": "SUBAGENT_COUNT_OUT_OF_RANGE", "message": 'KH_Aw blocked this operation: subagent count out of range.', "actual": actual_count})
     if actual_count < safety_floor:
-        issues.append({"code": "SUBAGENT_BELOW_SAFETY_FLOOR", "message": "대장 AI가 계산된 안전 최저치보다 하위 AI 수를 줄였습니다.", "floor": safety_floor, "actual": actual_count})
+        issues.append({"code": "SUBAGENT_BELOW_SAFETY_FLOOR", "message": 'KH_Aw blocked this operation: subagent below safety floor.', "floor": safety_floor, "actual": actual_count})
     justification_file: Path | None = None
     if actual_count > safety_floor:
         scale = plan.get("scaleJustification", {}) if isinstance(plan.get("scaleJustification"), dict) else {}
@@ -691,7 +747,7 @@ def orchestration_issues(run_root: Path, state: dict[str, Any], stage: str) -> l
             or scale.get("sha256") != (sha256_file(justification_file) if justification_file.is_file() else "")
             or scale.get("bytes") != (justification_file.stat().st_size if justification_file.is_file() else -1)
         ):
-            issues.append({"code": "SUBAGENT_SCALE_JUSTIFICATION_INVALID", "message": "안전 최저치 초과 증원에는 유효한 물리 근거 파일·해시가 필요합니다."})
+            issues.append({"code": "SUBAGENT_SCALE_JUSTIFICATION_INVALID", "message": 'KH_Aw blocked this operation: subagent scale justification invalid.'})
     try:
         expected = canonical_agent_plan(
             run_root, state, stage,
@@ -701,84 +757,109 @@ def orchestration_issues(run_root: Path, state: dict[str, Any], stage: str) -> l
     except ValueError:
         expected = None
     if expected is None or plan.get("planFingerprint") != expected.get("planFingerprint"):
-        issues.append({"code": "SUBAGENT_DYNAMIC_SCALE_MISMATCH", "message": "현재 프로젝트 규모·증원근거로 다시 계산한 배정과 계획이 일치하지 않습니다."})
+        issues.append({"code": "SUBAGENT_DYNAMIC_SCALE_MISMATCH", "message": 'KH_Aw blocked this operation: subagent dynamic scale mismatch.'})
     assignments = [item for item in plan.get("assignments", []) if isinstance(item, dict)]
     planned_ids = [str(item.get("workerId", "")) for item in assignments]
     if len(assignments) != actual_count or len(set(planned_ids)) != len(planned_ids) or any(not value for value in planned_ids):
-        issues.append({"code": "SUBAGENT_ASSIGNMENT_INVALID", "message": "하위 AI assignment 수·ID가 유효하지 않습니다."})
+        issues.append({"code": "SUBAGENT_ASSIGNMENT_INVALID", "message": 'KH_Aw blocked this operation: subagent assignment invalid.'})
     expected_map = {str(item.get("workerId")): item for item in (expected or {}).get("assignments", []) if isinstance(item, dict)}
     for assignment in assignments:
         worker_id = str(assignment.get("workerId", ""))
         exp = expected_map.get(worker_id, {})
         for key in ["taskId", "role", "scopeIds", "reviewTargetWorkerIds"]:
             if assignment.get(key) != exp.get(key):
-                issues.append({"code": "SUBAGENT_ASSIGNMENT_TAMPERED", "message": "하위 AI 작업·역할·범위·ring 검토 대상이 변경됐습니다.", "workerId": worker_id, "field": key})
+                issues.append({"code": "SUBAGENT_ASSIGNMENT_TAMPERED", "message": 'KH_Aw blocked this operation: subagent assignment tampered.', "workerId": worker_id, "field": key})
         dispatch_path = run_root / str(assignment.get("dispatchContractPath", ""))
         expected_dispatch = _dispatch_payload(stage, plan, assignment)
         dispatch_ok = dispatch_path.is_file() and assignment.get("dispatchContractSha256") == sha256_file(dispatch_path)
         if dispatch_ok:
             dispatch_ok = read_json(dispatch_path, {}) == expected_dispatch
         if not dispatch_ok:
-            issues.append({"code": "SUBAGENT_DISPATCH_CONTRACT_INVALID", "message": "worker별 불변 dispatch 계약 또는 SHA-256이 유효하지 않습니다.", "workerId": worker_id})
+            issues.append({"code": "SUBAGENT_DISPATCH_CONTRACT_INVALID", "message": 'KH_Aw blocked this operation: subagent dispatch contract invalid.', "workerId": worker_id})
     lead_contract_path = run_root / "orchestration" / stage / "lead-contract.json"
     lead_contract = read_json(lead_contract_path, None)
     lead_contract_sha = sha256_file(lead_contract_path) if lead_contract_path.is_file() else ""
     if not isinstance(lead_contract, dict) or lead_contract.get("planFingerprint") != plan.get("planFingerprint") or set(lead_contract.get("requiredWorkerIds", [])) != set(planned_ids):
-        issues.append({"code": "LEAD_AGENT_CONTRACT_INVALID", "message": "대장 AI 불변 계약이 없거나 agent plan과 일치하지 않습니다."})
+        issues.append({"code": "LEAD_AGENT_CONTRACT_INVALID", "message": 'KH_Aw blocked this operation: lead agent contract invalid.'})
 
     ledger = read_json(run_root / "orchestration" / stage / "execution-ledger.json", {})
     workers = [item for item in ledger.get("workers", []) if isinstance(item, dict)]
     if len(workers) != actual_count:
-        issues.append({"code": "SUBAGENT_EXECUTION_COUNT_INCOMPLETE", "message": "계획된 모든 하위 AI가 실제 완료되지 않았습니다.", "planned": actual_count, "completed": len(workers)})
+        issues.append({"code": "SUBAGENT_EXECUTION_COUNT_INCOMPLETE", "message": 'KH_Aw blocked this operation: subagent execution count incomplete.', "planned": actual_count, "completed": len(workers)})
     worker_ids = [str(item.get("workerId", "")) for item in workers]
     sessions = [str(item.get("sessionId", "")) for item in workers]
     output_hashes = [str(item.get("evidenceSha256", "")) for item in workers]
     receipt_hashes = [str(item.get("invocationReceiptSha256", "")) for item in workers]
     if set(worker_ids) != set(planned_ids):
-        issues.append({"code": "SUBAGENT_WORKER_COVERAGE_INCOMPLETE", "message": "실행된 하위 AI ID가 계획과 정확히 일치하지 않습니다."})
+        issues.append({"code": "SUBAGENT_WORKER_COVERAGE_INCOMPLETE", "message": 'KH_Aw blocked this operation: subagent worker coverage incomplete.'})
     if len(set(sessions)) != len(sessions) or any(not value for value in sessions):
-        issues.append({"code": "SUBAGENT_SESSION_NOT_INDEPENDENT", "message": "각 하위 AI는 고유한 독립 세션 ID를 사용해야 합니다."})
+        issues.append({"code": "SUBAGENT_SESSION_NOT_INDEPENDENT", "message": 'KH_Aw blocked this operation: subagent session not independent.'})
     if len(set(output_hashes)) != len(output_hashes) or any(not value for value in output_hashes):
-        issues.append({"code": "SUBAGENT_OUTPUT_DUPLICATED", "message": "하위 AI 결과는 서로 다른 물리 산출물과 해시를 가져야 합니다."})
+        issues.append({"code": "SUBAGENT_OUTPUT_DUPLICATED", "message": 'KH_Aw blocked this operation: subagent output duplicated.'})
     if len(set(receipt_hashes)) != len(receipt_hashes) or any(not value for value in receipt_hashes):
-        issues.append({"code": "SUBAGENT_INVOCATION_RECEIPT_DUPLICATED", "message": "각 하위 AI 호출 영수증은 고유한 물리 파일·해시여야 합니다."})
+        issues.append({"code": "SUBAGENT_INVOCATION_RECEIPT_DUPLICATED", "message": 'KH_Aw blocked this operation: subagent invocation receipt duplicated.'})
     assignment_map = {str(item.get("workerId")): item for item in assignments}
     reviewed_targets: list[str] = []
     for worker in workers:
         worker_id = str(worker.get("workerId", ""))
         assignment = assignment_map.get(worker_id, {})
         if worker.get("status") != "completed" or worker.get("taskId") != assignment.get("taskId") or worker.get("role") != assignment.get("role"):
-            issues.append({"code": "SUBAGENT_RECORD_INVALID", "message": "하위 AI 기록이 계획된 task/role/status와 일치하지 않습니다.", "workerId": worker_id})
-        if worker.get("delegationMode") not in {"native-agents", "independent-codex-task"}:
-            issues.append({"code": "SUBAGENT_DELEGATION_NOT_AI", "message": "하위 AI 실행은 독립 Codex 에이전트/태스크여야 합니다.", "workerId": worker_id})
-        if worker.get("delegationMode") == "native-agents" and "/agents" not in str(worker.get("invocation", "")):
-            issues.append({"code": "SUBAGENT_NATIVE_INVOCATION_INVALID", "message": "native-agents 기록에는 실제 /agents 호출이 필요합니다.", "workerId": worker_id})
+            issues.append({"code": "SUBAGENT_RECORD_INVALID", "message": 'KH_Aw blocked this operation: subagent record invalid.', "workerId": worker_id})
+        if worker.get("delegationMode") != "native-agents":
+            issues.append({"code": "SUBAGENT_DELEGATION_NOT_AI", "message": 'KH_Aw blocked this operation: subagent delegation not ai.', "workerId": worker_id})
+        if "/agents" not in str(worker.get("invocation", "")):
+            issues.append({"code": "SUBAGENT_NATIVE_INVOCATION_INVALID", "message": 'KH_Aw blocked this operation: subagent native invocation invalid.', "workerId": worker_id})
+        session_path = Path(str(worker.get("sessionEvidencePath", ""))).expanduser()
+        if (
+            not session_path.is_file()
+            or "/.codex/sessions/" not in session_path.as_posix().lower()
+            or not session_path.name.lower().startswith("rollout-")
+            or worker.get("sessionEvidenceSha256") != (sha256_file(session_path) if session_path.is_file() else "")
+            or int(worker.get("sessionEvidenceEventCount", 0) or 0) < 1
+        ):
+            issues.append({
+                "code": "SUBAGENT_CODEX_SESSION_EVIDENCE_INVALID",
+                "message": "Each worker must remain bound to a physical Codex rollout JSONL session.",
+                "workerId": worker_id,
+            })
         path = run_root / str(worker.get("evidencePath", ""))
         if not path.is_file() or path.stat().st_size < 96 or worker.get("evidenceSha256") != (sha256_file(path) if path.is_file() else ""):
-            issues.append({"code": "SUBAGENT_PHYSICAL_EVIDENCE_INVALID", "message": "하위 AI 물리 결과 파일·SHA-256이 유효하지 않습니다.", "workerId": worker_id})
+            issues.append({"code": "SUBAGENT_PHYSICAL_EVIDENCE_INVALID", "message": 'KH_Aw blocked this operation: subagent physical evidence invalid.', "workerId": worker_id})
         if worker.get("dispatchContractSha256") != assignment.get("dispatchContractSha256"):
-            issues.append({"code": "SUBAGENT_DISPATCH_LINK_INVALID", "message": "하위 AI 기록과 불변 dispatch 계약이 연결되지 않았습니다.", "workerId": worker_id})
+            issues.append({"code": "SUBAGENT_DISPATCH_LINK_INVALID", "message": 'KH_Aw blocked this operation: subagent dispatch link invalid.', "workerId": worker_id})
         if not _receipt_matches_worker(run_root, worker, assignment, stage):
-            issues.append({"code": "SUBAGENT_INVOCATION_RECEIPT_INVALID", "message": "실제 호출 영수증 파일·해시·내용이 assignment와 일치하지 않습니다.", "workerId": worker_id})
+            issues.append({"code": "SUBAGENT_INVOCATION_RECEIPT_INVALID", "message": 'KH_Aw blocked this operation: subagent invocation receipt invalid.', "workerId": worker_id})
         reviewed = [str(value) for value in worker.get("reviewOfWorkerIds", []) if value]
         expected_reviewed = [str(value) for value in assignment.get("reviewTargetWorkerIds", []) if value]
         if reviewed != expected_reviewed or worker_id in reviewed:
-            issues.append({"code": "SUBAGENT_RING_REVIEW_INVALID", "message": "각 worker는 계획된 다른 worker를 정확히 검토해야 합니다.", "workerId": worker_id})
+            issues.append({"code": "SUBAGENT_RING_REVIEW_INVALID", "message": 'KH_Aw blocked this operation: subagent ring review invalid.', "workerId": worker_id})
         reviewed_targets.extend(reviewed)
     if workers and set(reviewed_targets) != set(planned_ids):
-        issues.append({"code": "SUBAGENT_RING_REVIEW_COVERAGE_INCOMPLETE", "message": "모든 worker 결과가 최소 한 번씩 독립 교차검토되지 않았습니다."})
+        issues.append({"code": "SUBAGENT_RING_REVIEW_COVERAGE_INCOMPLETE", "message": 'KH_Aw blocked this operation: subagent ring review coverage incomplete.'})
 
     aggregation = read_json(run_root / "orchestration" / stage / "lead-aggregation.json", None)
     if not isinstance(aggregation, dict):
-        issues.append({"code": "LEAD_AGENT_AGGREGATION_MISSING", "message": "대장 AI의 물리 집계·충돌해결 증거가 없습니다."})
+        issues.append({"code": "LEAD_AGENT_AGGREGATION_MISSING", "message": 'KH_Aw blocked this operation: lead agent aggregation missing.'})
     else:
         if aggregation.get("status") != "completed" or set(aggregation.get("acceptedWorkerIds", [])) != set(planned_ids):
-            issues.append({"code": "LEAD_AGENT_AGGREGATION_INCOMPLETE", "message": "대장 AI가 모든 계획된 하위 AI 결과를 검토·수용하지 않았습니다."})
+            issues.append({"code": "LEAD_AGENT_AGGREGATION_INCOMPLETE", "message": 'KH_Aw blocked this operation: lead agent aggregation incomplete.'})
         if aggregation.get("leadSessionId") in set(sessions) or not str(aggregation.get("leadSessionId", "")):
-            issues.append({"code": "LEAD_AGENT_SESSION_NOT_INDEPENDENT", "message": "대장 AI 세션은 하위 AI 세션과 구분돼야 합니다."})
+            issues.append({"code": "LEAD_AGENT_SESSION_NOT_INDEPENDENT", "message": 'KH_Aw blocked this operation: lead agent session not independent.'})
         if aggregation.get("planFingerprint") != plan.get("planFingerprint") or aggregation.get("leadContractSha256") != lead_contract_sha:
-            issues.append({"code": "LEAD_AGENT_PLAN_CONTRACT_LINK_INVALID", "message": "대장 AI 집계가 현재 plan fingerprint와 lead-contract SHA-256에 연결되지 않았습니다."})
+            issues.append({"code": "LEAD_AGENT_PLAN_CONTRACT_LINK_INVALID", "message": 'KH_Aw blocked this operation: lead agent plan contract link invalid.'})
+        lead_session_path = Path(str(aggregation.get("sessionEvidencePath", ""))).expanduser()
+        if (
+            not lead_session_path.is_file()
+            or "/.codex/sessions/" not in lead_session_path.as_posix().lower()
+            or not lead_session_path.name.lower().startswith("rollout-")
+            or aggregation.get("sessionEvidenceSha256") != (sha256_file(lead_session_path) if lead_session_path.is_file() else "")
+            or int(aggregation.get("sessionEvidenceEventCount", 0) or 0) < 1
+        ):
+            issues.append({
+                "code": "LEAD_AGENT_CODEX_SESSION_EVIDENCE_INVALID",
+                "message": "The stage lead must remain bound to a physical Codex rollout JSONL session.",
+            })
         path = run_root / str(aggregation.get("evidencePath", ""))
         if not path.is_file() or path.stat().st_size < 96 or aggregation.get("evidenceSha256") != (sha256_file(path) if path.is_file() else ""):
-            issues.append({"code": "LEAD_AGENT_AGGREGATION_EVIDENCE_INVALID", "message": "대장 AI 집계 결과 파일·SHA-256이 유효하지 않습니다."})
+            issues.append({"code": "LEAD_AGENT_AGGREGATION_EVIDENCE_INVALID", "message": 'KH_Aw blocked this operation: lead agent aggregation evidence invalid.'})
     return issues

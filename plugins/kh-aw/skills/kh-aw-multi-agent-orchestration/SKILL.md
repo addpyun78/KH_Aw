@@ -49,7 +49,7 @@ Do not edit these files manually. Their physical SHA-256 values are checked by t
 
 ## 2. Dispatch real independent Codex subagents
 
-For every assignment, invoke a real independent Codex subagent using `/agents` when that native capability is available. An independently created Codex task/session is accepted as the fallback. A repeated self-review, generated assignment list, or prose claiming delegation does not count.
+For every assignment, invoke a real independent Codex subagent through native `/agents`. A separately created task, repeated self-review, generated assignment list, or prose claiming delegation does not replace `/agents`.
 
 Each worker receives its own immutable dispatch JSON. The worker must use:
 
@@ -120,7 +120,7 @@ python3 <plugin-root>/scripts/kh_aw_cli.py record-subagent \
 For an independent Codex task rather than `/agents`, use:
 
 ```bash
---delegation-mode independent-codex-task
+--delegation-mode native-agents
 ```
 
 The engine rejects reused sessions, reused receipts, reused output hashes, missing identity markers, dispatch tampering, role/task mismatch, files outside the run root, incomplete ring review, and fake fallback records.

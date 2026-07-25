@@ -13,7 +13,7 @@ Run the KH_Aw CLI. Do not substitute a written audit for the machine inventory a
 
 The analyze gate requires one physical inventory row per file, SHA-256, complete project structure, architecture, every page/region/field/logic/feature, file-level findings, security, performance, design, strengths, weaknesses, risks, and upgrade targets. `run-lock.json` prevents the mode or paths from being silently changed.
 
-Use `/context`, `/agents`, and `/artifact` when available and register their actual outputs. Otherwise `exercise-native` produces physical inventory/artifact fallbacks. Run `advance --stage analyze --strict`; repair the actual source/evidence and rerun until passed.
+Use `/goal`, `/context`, `/agents`, and `/artifact`, then register their actual outputs and Codex rollout JSONL evidence. Missing native slash evidence blocks the stage. Run `advance --stage analyze --strict`; repair the actual source/evidence and rerun until passed.
 
 ## Mandatory multi-agent execution
 

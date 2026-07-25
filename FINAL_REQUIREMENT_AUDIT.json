@@ -109,7 +109,7 @@
       "status": "PASS",
       "evidence": [
         "plugins/kh-aw/scripts/kh_aw/gates.py",
-        "plugins/kh-aw/references/ARTIFACT_CONTRACTS_KO.md"
+        "plugins/kh-aw/references/ARTIFACT_CONTRACTS.md"
       ]
     },
     {
@@ -117,7 +117,7 @@
       "requirement": "소기업용 고품질·주목·전환 설계",
       "status": "PASS",
       "evidence": [
-        "plugins/kh-aw/references/COMPANY_QUALITY_KO.md",
+        "plugins/kh-aw/references/COMPANY_QUALITY.md",
         "plugins/kh-aw/scripts/kh_aw/gates.py"
       ]
     },
@@ -194,7 +194,7 @@
     },
     {
       "id": "U-22",
-      "requirement": "단계별 슬러시/네이티브 기능 또는 물리 fallback",
+      "requirement": "단계별 필수 슬러시/네이티브 기능 실제 사용",
       "status": "PASS",
       "evidence": [
         "plugins/kh-aw/scripts/kh_aw/capabilities.py",

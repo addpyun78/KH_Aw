@@ -76,6 +76,7 @@ TARGET_REQUIREMENTS: dict[str, list[dict[str, Any]]] = {
         {"id": "ios-ui-test", "required": True, "kind": "simulator"},
     ],
     "cross-platform": [],
+    "unknown-needs-confirmation": [],
 }
 TARGET_REQUIREMENTS["app-mobile-webview"] = TARGET_REQUIREMENTS["web-responsive"] + TARGET_REQUIREMENTS["android-native"]
 TARGET_REQUIREMENTS["cross-platform"] = TARGET_REQUIREMENTS["web-responsive"] + TARGET_REQUIREMENTS["android-native"]
@@ -132,7 +133,7 @@ def tool_policy(target: str, project_root: Path | None = None) -> dict[str, Any]
         "targetPipeline": target,
         "apkInstallation": {
             "status": "forbidden",
-            "reason": "사용자 지시: APK 설치 제외",
+            "reason": 'User policy: APK installation is forbidden.',
             "forbiddenCommands": [pattern.pattern for pattern in APK_INSTALL_PATTERNS],
         },
         "requiredTools": requirements,
@@ -210,9 +211,47 @@ def _artifact_records(project_root: Path, artifacts: list[str]) -> list[dict[str
         if path.is_file():
             records.append({"path": path.as_posix(), "sha256": sha256_file(path), "bytes": path.stat().st_size})
         elif path.is_dir():
-            records.append({"path": path.as_posix(), "sha256": "", "bytes": 0, "directory": True})
+            records.append(directory_artifact_record(path))
         else:
             records.append({"path": path.as_posix(), "missing": True})
+    return records
+
+
+def directory_artifact_record(path: Path) -> dict[str, Any]:
+    import hashlib
+
+    digest = hashlib.sha256()
+    file_count = 0
+    total_bytes = 0
+    for child in sorted(item for item in path.rglob("*") if item.is_file()):
+        relative = child.relative_to(path).as_posix()
+        child_hash = sha256_file(child)
+        digest.update(relative.encode("utf-8"))
+        digest.update(child_hash.encode("ascii"))
+        file_count += 1
+        total_bytes += child.stat().st_size
+    return {
+        "path": path.as_posix(),
+        "sha256": digest.hexdigest(),
+        "bytes": total_bytes,
+        "fileCount": file_count,
+        "directory": True,
+    }
+
+
+def _artifact_glob_records(project_root: Path, patterns: list[str]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    seen: set[Path] = set()
+    for pattern in patterns:
+        for path in sorted(project_root.glob(pattern)):
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            if resolved.is_file():
+                records.append({"path": resolved.as_posix(), "sha256": sha256_file(resolved), "bytes": resolved.stat().st_size})
+            elif resolved.is_dir():
+                records.append(directory_artifact_record(resolved))
     return records
 
 
@@ -225,6 +264,7 @@ def execute_tool(
     cwd: Path | None = None,
     timeout: int = 1800,
     artifacts: list[str] | None = None,
+    artifact_globs: list[str] | None = None,
     env: dict[str, str] | None = None,
     satisfies_tool_ids: list[str] | None = None,
 ) -> dict[str, Any]:
@@ -283,7 +323,8 @@ def execute_tool(
         "timedOut": timed_out,
         "logPath": log_path.relative_to(run_root).as_posix(),
         "logSha256": sha256_file(log_path),
-        "artifacts": _artifact_records(project_root, list(artifacts or [])),
+        "artifacts": _artifact_records(project_root, list(artifacts or []))
+        + _artifact_glob_records(project_root, list(artifact_globs or [])),
         "apkInstallExcluded": True,
         "status": "passed" if exit_code == 0 else "failed",
     }
@@ -354,8 +395,25 @@ def exercise_capability(run_root: Path, state: dict[str, Any], capability_id: st
     evidence_dir.mkdir(parents=True, exist_ok=True)
     evidence_path = evidence_dir / f"{slug(capability_id)}.txt"
     tool_ids: list[str] = []
-    if capability_id == "codex-plan":
+    if capability_id.startswith("codex-goal-"):
+        stage = capability_id.removeprefix("codex-goal-")
+        source = {
+            "stage": stage,
+            "targetPipeline": state.get("targetPipeline", ""),
+            "currentStage": state.get("currentStage", ""),
+            "status": state.get("status", ""),
+            "goal": f"Pass the {stage} stage with physical evidence before advancing.",
+        }
+        evidence_path.write_text(json.dumps(source, ensure_ascii=False, indent=2), encoding="utf-8")
+        invocation = "KH_Aw physical /goal fallback"
+    elif capability_id in {"codex-plan", "codex-plan-design"}:
         source = read_json(run_root / "contract" / "requirements.json", {})
+        if capability_id == "codex-plan-design":
+            source = {
+                "requirements": source,
+                "pageInventory": read_json(run_root / "design" / "page-inventory.json", {}),
+                "researchRegistry": read_json(run_root / "evidence" / "source-registry.json", {}),
+            }
         evidence_path.write_text(json.dumps(source, ensure_ascii=False, indent=2), encoding="utf-8")
         invocation = "KH_Aw requirements/state-machine plan fallback"
     elif capability_id == "codex-context":

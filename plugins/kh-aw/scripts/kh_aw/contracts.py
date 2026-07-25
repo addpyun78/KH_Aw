@@ -4,11 +4,17 @@ from pathlib import Path
 from typing import Any
 
 from .capabilities import capability_policy
+from .language_policy import language_policy
 from .tooling import tool_policy
 from .orchestration import orchestration_policy
 from .util import exact_instruction_lines, utc_now, write_json
 
 STAGES = ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]
+PASSED_STAGE_STATUSES = {
+    "passed",
+    "passed-after-deterministic-repair",
+    "passed-final-verification",
+}
 RESEARCH_CATEGORIES = [
     "competitor", "feature", "design-system", "image", "font", "icon",
     "motion", "accessibility", "platform", "conversion",
@@ -19,6 +25,10 @@ FORBIDDEN_MANUAL_KEYS = {
     "conceptPicker", "colorPicker", "userSelectedConcept", "userSelectedColors",
     "templatePicker", "themePicker", "fixedDesignPreset", "presetPalette",
 }
+
+
+def stage_status_passed(value: Any) -> bool:
+    return str(value) in PASSED_STAGE_STATUSES
 
 
 def requirement_contract(instructions: str) -> dict[str, Any]:
@@ -91,10 +101,10 @@ def research_plan_template(requirements: dict[str, Any], target: str) -> dict[st
     for index, category in enumerate(RESEARCH_CATEGORIES, 1):
         elements.append({
             "id": f"BASE-{index:02d}-{category.upper()}",
-            "label": "AI가 현재 프로젝트 요구사항과 분석 결과에서 동적으로 작성해야 함",
+            "label": "AI must replace this placeholder from current project requirements and analysis.",
             "category": category,
             "requirementIds": linked,
-            "reason": f"{category} 영역의 프로젝트 적합 근거 확보",
+            "reason": f"Collect project-specific evidence for the {category} area.",
             "targetPipeline": target,
             "exceptionCode": "",
             "webQueries": [],
@@ -105,7 +115,7 @@ def research_plan_template(requirements: dict[str, Any], target: str) -> dict[st
         "schemaVersion": "3.0",
         "generatedAt": utc_now(),
         "targetPipeline": target,
-        "projectLabel": "AI가 분석 결과에서 동적으로 작성",
+        "projectLabel": "AI must derive this dynamically from the analysis.",
         "rules": {
             "bodyExtractionRequired": True,
             "webSourcesPerElement": 2,
@@ -115,6 +125,7 @@ def research_plan_template(requirements: dict[str, Any], target: str) -> dict[st
             "manualColorSelectionForbidden": True,
             "fixedDesignPresetForbidden": True,
         },
+        "requirementCoverage": [],
         "elements": elements,
     }
 
@@ -123,8 +134,10 @@ def page_inventory_template() -> dict[str, Any]:
     return {
         "schemaVersion": "3.0",
         "generatedAt": utc_now(),
+        "candidateInventoryPath": "inventory/page-candidates.json",
         "pages": [],
-        "rule": "분석에서 발견·요구된 모든 실제 페이지를 빠짐없이 등록하며 대표 샘플로 대체하지 않는다.",
+        "excludedCandidates": [],
+        "rule": "Register every real page discovered or required by analysis. A representative sample cannot replace full page coverage.",
     }
 
 
@@ -141,9 +154,13 @@ def design_ledger_template() -> dict[str, Any]:
         },
         "visualStructureBoard": {"htmlPath": "", "imagePath": "", "pageIds": []},
         "pages": [],
+        "requirementCoverage": [],
         "globalQuality": {
             "smallBusinessAttentionStrategy": "",
             "imageSystem": "",
+            "heroSystem": "",
+            "iconSystem": "",
+            "fontSystem": "",
             "motionSystem": "",
             "accessibilitySystem": "",
             "conversionSystem": "",
@@ -158,6 +175,7 @@ def implementation_ledger_template() -> dict[str, Any]:
         "schemaVersion": "3.0",
         "generatedAt": utc_now(),
         "pages": [],
+        "requirementCoverage": [],
         "imageAssets": [],
         "motionImplementations": [],
         "dataImplementations": [],
@@ -167,11 +185,45 @@ def implementation_ledger_template() -> dict[str, Any]:
     }
 
 
+def copy_audit_template() -> dict[str, Any]:
+    return {
+        "schemaVersion": "3.2",
+        "generatedAt": utc_now(),
+        "targetPipeline": "",
+        "analysisRoot": "",
+        "productRoot": "",
+        "sourceFileCount": 0,
+        "productFileCount": 0,
+        "copiedFileCount": 0,
+        "forbiddenCopyCount": 0,
+        "nativeForbiddenCopyCount": 0,
+        "copiedFiles": [],
+        "omissions": [],
+    }
+
+
+def session_forensics_template() -> dict[str, Any]:
+    return {
+        "schemaVersion": "3.2",
+        "generatedAt": utc_now(),
+        "sessionId": "",
+        "commands": [],
+        "failedCommands": [],
+        "notRunRequiredChecks": [],
+        "finalReportClaims": [],
+        "evidenceMismatches": [],
+        "slashCapabilityFindings": [],
+        "completionTruth": "not-evaluated",
+        "omissions": [],
+    }
+
+
 def review_template() -> dict[str, Any]:
     return {
         "schemaVersion": "3.0",
         "generatedAt": utc_now(),
         "pages": [],
+        "requirementCoverage": [],
         "crossPageConsistency": [],
         "unresolvedIssues": [],
         "decision": "pending",
@@ -186,6 +238,7 @@ def test_template() -> dict[str, Any]:
         "apkInstallationPolicy": "forbidden",
         "toolDiscovery": {},
         "toolExecutions": [],
+        "requirementCoverage": [],
         "commands": [],
         "pageVisualChecks": [],
         "accessibilityChecks": [],
@@ -206,6 +259,7 @@ def release_template() -> dict[str, Any]:
         "schemaVersion": "3.0",
         "generatedAt": utc_now(),
         "version": "",
+        "requirementCoverage": [],
         "artifacts": [],
         "installation": "",
         "rollback": "",
@@ -215,6 +269,8 @@ def release_template() -> dict[str, Any]:
         "securityScan": {"status": "pending", "scannedRoot": "", "findings": []},
         "openRepairTickets": [],
         "releaseNotes": "",
+        "userReportPath": "",
+        "userReportSha256": "",
         "omissions": [],
     }
 
@@ -229,6 +285,7 @@ def create_run_contracts(run_root: Path, instructions: str, target: str) -> dict
         "review": run_root / "review",
         "test": run_root / "test",
         "release": run_root / "release",
+        "audit": run_root / "audit",
         "repairs": run_root / "repairs",
         "reports": run_root / "reports",
         "checkpoints": run_root / "checkpoints",
@@ -245,6 +302,7 @@ def create_run_contracts(run_root: Path, instructions: str, target: str) -> dict
     requirements = requirement_contract(instructions)
     write_json(folders["contract"] / "requirements.json", requirements)
     write_json(folders["contract"] / "native-capability-policy.json", capability_policy())
+    write_json(folders["contract"] / "language-policy.json", language_policy())
     write_json(folders["contract"] / "tool-policy.json", tool_policy(target))
     write_json(folders["contract"] / "subagent-orchestration-policy.json", orchestration_policy())
     write_json(folders["analysis"] / "analysis-ledger.json", analysis_ledger_template())
@@ -253,6 +311,8 @@ def create_run_contracts(run_root: Path, instructions: str, target: str) -> dict
     write_json(folders["design"] / "page-inventory.json", page_inventory_template())
     write_json(folders["design"] / "design-ledger.json", design_ledger_template())
     write_json(folders["implementation"] / "implementation-ledger.json", implementation_ledger_template())
+    write_json(folders["audit"] / "copy-audit-ledger.json", copy_audit_template())
+    write_json(folders["audit"] / "session-forensics.json", session_forensics_template())
     write_json(folders["review"] / "review.json", review_template())
     write_json(folders["test"] / "test-report.json", test_template())
     write_json(folders["release"] / "release.json", release_template())
@@ -260,6 +320,7 @@ def create_run_contracts(run_root: Path, instructions: str, target: str) -> dict
     return {
         "requirements": (folders["contract"] / "requirements.json").as_posix(),
         "nativeCapabilityPolicy": (folders["contract"] / "native-capability-policy.json").as_posix(),
+        "languagePolicy": (folders["contract"] / "language-policy.json").as_posix(),
         "toolPolicy": (folders["contract"] / "tool-policy.json").as_posix(),
         "subagentOrchestrationPolicy": (folders["contract"] / "subagent-orchestration-policy.json").as_posix(),
         "analysisLedger": (folders["analysis"] / "analysis-ledger.json").as_posix(),
@@ -268,6 +329,8 @@ def create_run_contracts(run_root: Path, instructions: str, target: str) -> dict
         "pageInventory": (folders["design"] / "page-inventory.json").as_posix(),
         "designLedger": (folders["design"] / "design-ledger.json").as_posix(),
         "implementationLedger": (folders["implementation"] / "implementation-ledger.json").as_posix(),
+        "copyAuditLedger": (folders["audit"] / "copy-audit-ledger.json").as_posix(),
+        "sessionForensics": (folders["audit"] / "session-forensics.json").as_posix(),
         "review": (folders["review"] / "review.json").as_posix(),
         "testReport": (folders["test"] / "test-report.json").as_posix(),
         "release": (folders["release"] / "release.json").as_posix(),

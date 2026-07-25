@@ -36,6 +36,9 @@ def expected_run_lock(state: dict[str, Any]) -> dict[str, Any]:
     payload["fixedSixtySubAgents"] = False
     payload["promptOnlySubAgentDelegation"] = "forbidden"
     payload["independentSubAgentSessions"] = "required"
+    payload["internalLanguage"] = "en"
+    payload["userFacingLanguage"] = "ko-KR"
+    payload["requiredSlashEvidence"] = "native"
     payload["stageOrder"] = ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]
     return payload
 
@@ -59,20 +62,20 @@ def verify_run_lock(run_root: Path, state: dict[str, Any]) -> list[dict[str, Any
     path = run_root / "contract" / "run-lock.json"
     issues: list[dict[str, Any]] = []
     if not path.is_file():
-        return [{"code": "RUN_LOCK_MISSING", "message": "실행 고정 계약(run-lock.json)이 없습니다."}]
+        return [{"code": "RUN_LOCK_MISSING", "message": 'KH_Aw blocked this operation: run lock missing.'}]
     actual = read_json(path, {})
     expected = expected_run_lock(state)
     for key, value in expected.items():
         if actual.get(key) != value:
-            issues.append({"code": "RUN_LOCK_TAMPERED", "message": "실행 고정 계약이 초기 조건과 다릅니다.", "field": key, "expected": value, "actual": actual.get(key)})
+            issues.append({"code": "RUN_LOCK_TAMPERED", "message": 'KH_Aw blocked this operation: run lock tampered.', "field": key, "expected": value, "actual": actual.get(key)})
     actual_hash = sha256_file(path)
     if state.get("runLockSha256") != actual_hash:
-        issues.append({"code": "RUN_LOCK_HASH_MISMATCH", "message": "state.json의 run-lock SHA-256과 실제 파일이 다릅니다.", "expected": state.get("runLockSha256"), "actual": actual_hash})
+        issues.append({"code": "RUN_LOCK_HASH_MISMATCH", "message": 'KH_Aw blocked this operation: run lock hash mismatch.', "expected": state.get("runLockSha256"), "actual": actual_hash})
     checkpoint = run_root / "checkpoints" / "run-lock.last-good.json"
     if not checkpoint.is_file() or sha256_file(checkpoint) != state.get("runLockCheckpointSha256"):
-        issues.append({"code": "RUN_LOCK_CHECKPOINT_INVALID", "message": "실행 고정 계약의 독립 체크포인트가 없거나 해시가 다릅니다."})
+        issues.append({"code": "RUN_LOCK_CHECKPOINT_INVALID", "message": 'KH_Aw blocked this operation: run lock checkpoint invalid.'})
     elif checkpoint.read_bytes() != path.read_bytes():
-        issues.append({"code": "RUN_LOCK_CHECKPOINT_DIVERGED", "message": "실행 고정 계약과 독립 체크포인트 내용이 다릅니다."})
+        issues.append({"code": "RUN_LOCK_CHECKPOINT_DIVERGED", "message": 'KH_Aw blocked this operation: run lock checkpoint diverged.'})
     return issues
 
 

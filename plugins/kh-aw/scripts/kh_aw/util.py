@@ -142,7 +142,7 @@ def line_count(path: Path) -> int | None:
 
 
 def slug(value: str, fallback: str = "item") -> str:
-    result = re.sub(r"[^a-z0-9가-힣]+", "-", str(value).strip().lower()).strip("-")
+    result = re.sub(r"[^a-z0-9\uac00-\ud7a3]+", "-", str(value).strip().lower()).strip("-")
     return result[:80] or fallback
 
 

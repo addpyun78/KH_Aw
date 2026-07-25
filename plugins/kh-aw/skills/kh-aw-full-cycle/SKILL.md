@@ -25,11 +25,11 @@ python3 <plugin-root>/scripts/kh_aw_cli.py init \
   --name <project-name>
 ```
 
-Initialization creates `run-lock.json`, an independent lock checkpoint, exact requirement IDs, full inventory, analysis-source protection, native capability policy, target tool policy, and the first physical `/plan` fallback evidence.
+Initialization creates `run-lock.json`, an independent lock checkpoint, exact requirement IDs, full inventory, analysis-source protection, native capability policy, and target tool policy. It remains blocked until the stage owner registers physical native `/goal`, `/plan`, and `/agents` evidence.
 
 ## Mandatory order
 
-`intake → analyze → research → design → implement → review → test → release`
+`intake -> analyze -> research -> design -> implement -> review -> test -> release`
 
 ```bash
 python3 <plugin-root>/scripts/kh_aw_cli.py advance --run-root <run-root> --stage <current-stage> --strict
@@ -55,22 +55,23 @@ python3 <plugin-root>/scripts/kh_aw_cli.py agent-status --run-root <run-root> --
 
 ## Native/slash capability contract
 
-For the current Codex surface, prefer the matching native feature: `/plan`, `/context`, `/agents`, `/artifact`, `/search`, `/diff`, `/review`, `/test`, `/hooks`. When the surface exposes it, save the physical output and register it:
+For the current Codex surface, use the matching required native feature: `/goal`, `/plan`, `/context`, `/agents`, `/artifact`, `/search`, `/diff`, `/review`, and `/test`. Optional surface features such as `/hooks` may add evidence but cannot replace a required capability. Save the physical output and register it:
 
 ```bash
 python3 <plugin-root>/scripts/kh_aw_cli.py record-native \
   --run-root <run-root> --capability-id <id> \
   --evidence-file <physical-output-file> \
-  --invocation </slash invocation> --session-id <actual-session-id>
+  --invocation </slash invocation> --session-id <actual-session-id> \
+  --session-evidence-file <physical-codex-rollout-jsonl>
 ```
 
-A skill-only plugin cannot force the Codex UI to execute a slash command. If native execution is unavailable, run the implemented physical fallback:
+A skill-only plugin cannot force the Codex UI to execute a slash command. Required slash capabilities therefore fail closed when native execution evidence is unavailable. Optional capabilities may use the implemented physical fallback:
 
 ```bash
 python3 <plugin-root>/scripts/kh_aw_cli.py exercise-native --run-root <run-root> --capability-id <id>
 ```
 
-The gate requires one verified path. A sentence claiming that a slash function was used is rejected.
+The gate requires verified native evidence for every required slash capability. A fallback cannot satisfy a required capability, and a sentence claiming that a slash function was used is rejected.
 
 ## Target toolchain
 

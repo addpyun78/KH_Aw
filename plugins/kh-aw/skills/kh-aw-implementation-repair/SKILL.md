@@ -10,7 +10,7 @@ Implementation starts only after the design gate passes. Every page ledger entry
 
 Images require physical files, SHA-256, provenance or generation prompt, rights/ownership, project-fit reason, and code usage locations. Motion requires physical implementation markers, purpose, timing/easing, and reduced-motion code.
 
-Use `/diff` when available and register its output. Otherwise KH_Aw runs Git diff checks or an initial-vs-current SHA-256 diff. On gate failure, the engine restores protected inputs, regenerates damaged contracts, removes forbidden design-selection keys, executes mapped repair actions, creates a root-cause ticket, and reruns. Do not close or skip the ticket manually; the gate report hash closes it automatically after success.
+Use `/goal`, `/agents`, and `/diff`, then register their outputs and Codex rollout JSONL evidence. Physical Git or SHA-256 comparison is additional implementation evidence and cannot replace `/diff`. On gate failure, the engine restores protected inputs, regenerates damaged contracts, removes forbidden design-selection keys, executes mapped repair actions, creates a root-cause ticket, and reruns. Do not close or skip the ticket manually; the gate report hash closes it automatically after success.
 
 ## Mandatory multi-agent execution
 

@@ -8,7 +8,7 @@ disable-model-invocation: false
 
 ## Review
 
-Capture every implemented page from the actual runtime, bind the screenshot to the successful browser/tool execution ID, hash it, and compare it with its approved mockup. Verify regions, fields, logic, features, images, motion, states, responsive layout, accessibility, and overlaps. `/review` and `/diff` outputs are preferred when available; physical browser/Git fallback is mandatory otherwise.
+Capture every implemented page from the actual runtime, bind the screenshot to the successful browser/tool execution ID, hash it, and compare it with its approved mockup. Verify regions, fields, logic, features, images, hero, typography, color, icons, motion, reduced motion, states, Korean UI, responsive layout, accessibility, and overlaps. Native `/goal`, `/agents`, `/review`, and `/diff` outputs are required; physical browser and Git evidence is also mandatory and cannot replace them.
 
 ## Test tools
 

@@ -1,7 +1,7 @@
 {
   "name": "kh-aw-marketplace",
   "interface": {
-    "displayName": "KH_Aw Marketplace"
+    "displayName": "KH_Aw 마켓플레이스"
   },
   "plugins": [
     {

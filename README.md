@@ -38,9 +38,9 @@
 
 ## 슬러시·네이티브 기능
 
-각 단계에서 `/plan`, `/context`, `/agents`, `/artifact`, `/search`, `/diff`, `/review`, `/test`, `/hooks` 중 해당 기능을 우선 사용합니다. 실제 Codex 표면에서 사용할 수 있으면 세션 ID·호출문·결과 파일을 기록합니다. UI 기능을 subprocess로 호출할 수 없는 표면에서는 파일·Git·본문·브라우저·도구 기반 물리 fallback을 실행합니다.
+각 단계에서 `/goal`과 `/agents`를 반드시 사용하고, 단계에 따라 `/plan`, `/context`, `/artifact`, `/search`, `/diff`, `/review`, `/test`를 실제로 사용합니다. 각 호출은 실제 Codex 세션 JSONL, 세션 ID, 호출문, 결과 파일, SHA-256이 모두 맞아야 합니다. 필수 기능을 사용할 수 없는 표면에서는 fallback으로 통과시키지 않고 해당 단계를 차단합니다.
 
-단, `/agents` fallback은 배정표 생성에만 사용되며 **실제 하위 AI 완료로 인정되지 않습니다.** 하위 AI 게이트는 독립 Codex 세션 결과를 별도로 요구합니다.
+선택 기능의 물리 fallback은 추가 진단 자료일 뿐입니다. `/agents` 담당자는 모두 독립 Codex 세션 결과와 교차검토 증거를 별도로 제출해야 합니다.
 
 ## APK 설치 제외
 
@@ -74,4 +74,4 @@ audit/*
 - `FULL_STAGE_REPORT.md`
 - `NATIVE_AND_TOOL_ENFORCEMENT_REPORT.md`
 - `FINAL_SCORE_REPORT.md`
-- `plugins/kh-aw/references/RUNBOOK_KO.md`
+- `plugins/kh-aw/references/RUNBOOK.md`

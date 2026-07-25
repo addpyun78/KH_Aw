@@ -10,7 +10,7 @@ disable-model-invocation: false
 
 Replace the dynamic research-plan entries from current requirements and analysis. Search is discovery only. Save the actual destination body and extracted text with URL, HTTP status, source type, project-fit reason, license/rights note, and SHA-256 through `fetch-source` or `register-source`.
 
-Search-result pages, snippets, titles, empty JSON shells, CAPTCHA, login/access-denied pages, and URLs without physical body files fail. Use `/search` when available; otherwise the body registry fallback is required.
+Search-result pages, snippets, titles, empty JSON shells, CAPTCHA, login/access-denied pages, and URLs without physical body files fail. Native `/goal`, `/agents`, `/search`, and `/artifact` evidence is required. The body registry is additional physical research evidence and cannot replace a required slash invocation.
 
 ## Design gate
 

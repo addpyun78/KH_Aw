@@ -18,7 +18,7 @@ function args() {
 }
 function readJson(file) { return JSON.parse(fs.readFileSync(file, 'utf8')); }
 function writeJson(file, value) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); }
-function slug(value) { return String(value || 'page').toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/^-|-$/g, '') || 'page'; }
+function slug(value) { return String(value || 'page').toLowerCase().replace(/[^a-z0-9\uac00-\ud7a3]+/g, '-').replace(/^-|-$/g, '') || 'page'; }
 
 const opt = args();
 const runRoot = path.resolve(String(opt['run-root'] || ''));
@@ -29,6 +29,8 @@ const browserType = { chromium, firefox, webkit }[browserName];
 if (!browserType) throw new Error(`unsupported browser ${browserName}`);
 const inventory = readJson(path.join(runRoot, 'design', 'page-inventory.json'));
 const pages = Array.isArray(inventory.pages) ? inventory.pages : [];
+const designLedger = readJson(path.join(runRoot, 'design', 'design-ledger.json'));
+const designs = new Map((designLedger.pages || []).map(item => [String(item.pageId || ''), item]));
 if (!pages.length) throw new Error('page inventory is empty');
 const outDir = path.join(runRoot, 'test', 'browser', browserName);
 fs.mkdirSync(outDir, { recursive: true });
@@ -44,7 +46,10 @@ try {
   for (let index = 0; index < pages.length; index += 1) {
     const p = pages[index];
     const pageId = String(p.pageId || `page-${index + 1}`);
-    let route = String(p.route || p.url || p.path || (index === 0 ? '/' : `/${pageId}`));
+    let route = String(p.routeOrEntry || p.route || p.url || p.path || (index === 0 ? '/' : `/${pageId}`));
+    const design = designs.get(pageId) || {};
+    const expectedMotion = design.motionStrategy?.required === true;
+    const expectedHero = design.heroStrategy?.required === true;
     const url = /^https?:\/\//i.test(route) ? route : `${baseUrl}${route.startsWith('/') ? '' : '/'}${route}`;
     const pageResult = { pageId, route, url, viewports: [], consoleErrors: [], pageErrors: [], requestFailures: [], badResponses: [], brokenImages: [], axe: [] };
     for (const viewport of viewports) {
@@ -67,18 +72,67 @@ try {
       const axe = await new AxeBuilder({ page }).analyze();
       const severe = axe.violations.filter(v => ['critical', 'serious'].includes(v.impact || ''));
       pageResult.axe.push({ viewport: viewport.id, violationCount: axe.violations.length, severeCount: severe.length, violations: axe.violations });
-      const motion = await page.evaluate(() => ({
-        animationCount: document.getAnimations().length,
-        reducedMotionQuery: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-        title: document.title,
-      }));
+      const motion = await page.evaluate(() => {
+        const elements = [...document.querySelectorAll('body *')];
+        const motionElementCount = elements.filter(element => {
+          const style = getComputedStyle(element);
+          return style.animationName !== 'none'
+            || style.transitionDuration.split(',').some(value => parseFloat(value) > 0);
+        }).length;
+        const cssText = [...document.styleSheets].map(sheet => {
+          try { return [...sheet.cssRules].map(rule => rule.cssText).join('\n'); } catch { return ''; }
+        }).join('\n');
+        return {
+          animationCount: document.getAnimations().length,
+          motionElementCount,
+          reducedMotionCssPresent: /prefers-reduced-motion\s*:\s*reduce/i.test(cssText),
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+          scrollHeight: document.documentElement.scrollHeight,
+          clientHeight: document.documentElement.clientHeight,
+          imageCount: document.images.length,
+          heroSignalCount: document.querySelectorAll('[data-hero], main > header, main > section:first-child h1, .hero').length,
+          koreanCharacterCount: (document.body?.innerText.match(/[\uac00-\ud7a3]/g) || []).length,
+          title: document.title,
+        };
+      });
       const screenshot = path.join(outDir, `${slug(pageId)}-${viewport.id}.png`);
       await page.screenshot({ path: screenshot, fullPage: true });
-      const failures = pageResult.consoleErrors.length + pageResult.pageErrors.length + pageResult.requestFailures.length + pageResult.badResponses.length + pageResult.brokenImages.length + severe.length + (motion.scrollWidth > motion.clientWidth + 2 ? 1 : 0) + (navigationStatus >= 400 || navigationStatus === 0 ? 1 : 0);
+      let reducedMotion = null;
+      if (expectedMotion && viewport.id === 'mobile') {
+        const reducedContext = await browser.newContext({
+          viewport: { width: viewport.width, height: viewport.height },
+          reducedMotion: 'reduce',
+        });
+        const reducedPage = await reducedContext.newPage();
+        await reducedPage.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+        reducedMotion = await reducedPage.evaluate(() => {
+          const active = [...document.querySelectorAll('body *')].filter(element => {
+            const style = getComputedStyle(element);
+            return style.animationName !== 'none'
+              || style.transitionDuration.split(',').some(value => parseFloat(value) > 0);
+          }).length;
+          return {
+            mediaQueryMatches: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+            motionElementCount: active,
+          };
+        });
+        await reducedContext.close();
+      }
+      const failures = pageResult.consoleErrors.length
+        + pageResult.pageErrors.length
+        + pageResult.requestFailures.length
+        + pageResult.badResponses.length
+        + pageResult.brokenImages.length
+        + severe.length
+        + (motion.scrollWidth > motion.clientWidth + 2 ? 1 : 0)
+        + (navigationStatus >= 400 || navigationStatus === 0 ? 1 : 0)
+        + (motion.koreanCharacterCount < 2 ? 1 : 0)
+        + (expectedMotion && (motion.motionElementCount < 1 || !motion.reducedMotionCssPresent) ? 1 : 0)
+        + (expectedMotion && viewport.id === 'mobile' && (!reducedMotion?.mediaQueryMatches || reducedMotion.motionElementCount > motion.motionElementCount) ? 1 : 0)
+        + (expectedHero && (motion.heroSignalCount < 1 || motion.imageCount < 1 || motion.scrollHeight <= motion.clientHeight) ? 1 : 0);
       if (failures) hardFailures += failures;
-      pageResult.viewports.push({ ...viewport, navigationStatus, screenshot, motion, pass: failures === 0 });
+      pageResult.viewports.push({ ...viewport, navigationStatus, screenshot, motion, reducedMotion, pass: failures === 0 });
       await context.close();
     }
     result.pages.push(pageResult);

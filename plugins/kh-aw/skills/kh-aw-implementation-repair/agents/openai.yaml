@@ -1,6 +1,6 @@
 interface:
-  display_name: "KH_Aw Repair"
-  short_description: "실제 구현 증거와 비종료 자동수리 루프"
-  default_prompt: "KH_Aw 계약과 실행 게이트를 사용해 실제 파일 증거로 이 작업을 끝까지 수행해줘."
+  display_name: "KH_Aw 구현 수리"
+  short_description: "실제 구현 증거를 확인하고 원인 단계부터 수리"
+  default_prompt: "Use the KH_Aw repair loop and executable gates until the implementation has genuine file, runtime, and test evidence."
 policy:
   allow_implicit_invocation: true

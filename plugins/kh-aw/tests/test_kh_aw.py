@@ -9,6 +9,7 @@ sys.dont_write_bytecode = True
 import tempfile
 import unittest
 import zlib
+import zipfile
 from pathlib import Path
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
@@ -16,21 +17,24 @@ SCRIPTS = PLUGIN_ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from kh_aw.capabilities import record_capability
-from kh_aw.contracts import create_run_contracts
+from kh_aw.capabilities import canonical_capability_ids, record_capability
+from kh_aw.contracts import STAGES, create_run_contracts, stage_status_passed
 from kh_aw.evidence import register_source
 from kh_aw.distribution import validate_distribution
-from kh_aw.gates import run_gate
+from kh_aw.gates import gate_test, run_gate
 from kh_aw.inventory import build_inventory
+from kh_aw.language_policy import internal_language_issues, korean_ui_character_count
 from kh_aw.plugin_validate import validate_plugin
 from kh_aw.orchestration import (
     MIN_SUBAGENTS, MAX_SUBAGENTS, ensure_agent_plan, recommended_subagent_count,
     record_subagent_result, record_lead_aggregation, orchestration_issues,
 )
+from kh_aw.page_inventory import build_page_candidates
 from kh_aw.protection import compare_snapshot, create_protected_snapshot, restore_snapshot
 from kh_aw.repair import create_repair_ticket, deterministic_repair
 from kh_aw.run_lock import verify_run_lock, write_run_lock
-from kh_aw.tooling import canonical_required_tool_ids, command_forbidden, execute_tool, tool_policy
+from kh_aw.tooling import canonical_required_tool_ids, command_forbidden, directory_artifact_record, execute_tool, tool_policy
+from kh_aw.targeting import infer_target_pipeline
 from kh_aw.util import read_json, save_state, sha256_file, write_json
 
 
@@ -51,7 +55,7 @@ class KHAwTest(unittest.TestCase):
         (self.project / "index.html").write_text("<html><body>project</body></html>", encoding="utf-8")
         self.run = self.temp / "run"
         self.run.mkdir()
-        self.instructions = "첫 번째 요구사항\n두 번째 요구사항\n"
+        self.instructions = "\uccab \ubc88\uc9f8 \uc694\uad6c\uc0ac\ud56d\n\ub450 \ubc88\uc9f8 \uc694\uad6c\uc0ac\ud56d\n"
         create_run_contracts(self.run, self.instructions, "web-responsive")
         build_inventory(self.project, self.run / "inventory")
         self.state = {
@@ -77,6 +81,16 @@ class KHAwTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp, ignore_errors=True)
 
+    def _write_codex_session(self, session_id: str, task_id: str, suffix: str, invocation: str = "") -> Path:
+        path = self.temp / ".codex" / "sessions" / "2026" / "07" / "25" / f"rollout-{session_id}-{suffix}.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        events = [
+            {"type": "session_meta", "payload": {"id": session_id, "taskId": task_id}},
+            {"type": "response_item", "payload": {"sessionId": session_id, "taskId": task_id, "invocation": invocation, "text": "physical Codex execution evidence " * 8}},
+        ]
+        path.write_text("\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8")
+        return path
+
     def test_plugin_manifest_valid(self):
         self.assertEqual(validate_plugin(PLUGIN_ROOT), [])
 
@@ -99,14 +113,14 @@ class KHAwTest(unittest.TestCase):
     def test_search_result_page_is_not_evidence(self):
         plan = read_json(self.run / "evidence" / "research-plan.json")
         plan["elements"] = [{
-            "id": "E1", "label": "동적 실제 주제", "category": category,
+            "id": "E1", "label": "\ub3d9\uc801 \uc2e4\uc81c \uc8fc\uc81c", "category": category,
             "requirementIds": ["REQ-001", "REQ-002"], "webQueries": ["one query", "two query"],
             "githubQueries": ["one github", "two github"], "status": "ready",
         } for category in ["competitor", "feature", "design-system", "image", "font", "icon", "motion", "accessibility", "platform", "conversion"]]
         write_json(self.run / "evidence" / "research-plan.json", plan)
         body = self.temp / "body.html"
-        body.write_text("<html><body>" + ("본문 연구 내용 " * 100) + "</body></html>", encoding="utf-8")
-        register_source(self.run, element_id="E1", source_type="web", url="https://duckduckgo.com/html/?q=test", body_file=body, project_fit_reason="현재 프로젝트 요구와 화면 구조를 비교하기 위한 구체적 근거입니다.")
+        body.write_text("<html><body>" + ("\ubcf8\ubb38 \uc5f0\uad6c \ub0b4\uc6a9 " * 100) + "</body></html>", encoding="utf-8")
+        register_source(self.run, element_id="E1", source_type="web", url="https://duckduckgo.com/html/?q=test", body_file=body, project_fit_reason="\ud604\uc7ac \ud504\ub85c\uc81d\ud2b8 \uc694\uad6c\uc640 \ud654\uba74 \uad6c\uc870\ub97c \ube44\uad50\ud558\uae30 \uc704\ud55c \uad6c\uccb4\uc801 \uadfc\uac70\uc785\ub2c8\ub2e4.")
         gate = run_gate(self.run, self.state, "research")
         self.assertIn("SEARCH_RESULT_IS_NOT_BODY_EVIDENCE", {item["code"] for item in gate["issues"]})
 
@@ -114,7 +128,7 @@ class KHAwTest(unittest.TestCase):
         registry = {"schemaVersion": "2.0", "sources": [{
             "id": "SRC-1", "elementId": "E1", "sourceType": "web", "url": "https://example.com",
             "bodyPath": "missing.html", "textPath": "missing.txt", "bodySha256": "x", "httpStatus": 200,
-            "extractedCharacters": 0, "projectFitReason": "현재 프로젝트에 매우 구체적으로 적합하다는 충분한 이유를 기록합니다.",
+            "extractedCharacters": 0, "projectFitReason": "\ud604\uc7ac \ud504\ub85c\uc81d\ud2b8\uc5d0 \ub9e4\uc6b0 \uad6c\uccb4\uc801\uc73c\ub85c \uc801\ud569\ud558\ub2e4\ub294 \ucda9\ubd84\ud55c \uc774\uc720\ub97c \uae30\ub85d\ud569\ub2c8\ub2e4.",
         }]}
         write_json(self.run / "evidence" / "source-registry.json", registry)
         gate = run_gate(self.run, self.state, "research")
@@ -176,9 +190,9 @@ class KHAwTest(unittest.TestCase):
         gate = run_gate(self.run, self.state, "implement")
         self.assertNotIn("IMPLEMENTATION_FILE_HASH_MISSING", {item["code"] for item in gate["issues"]})
 
-    def test_cli_advance_returns_zero_on_repair(self):
+    def test_cli_advance_returns_nonzero_on_repair(self):
         completed = subprocess.run([sys.executable, str(SCRIPTS / "kh_aw_cli.py"), "advance", "--run-root", str(self.run), "--stage", "analyze"], capture_output=True, text=True)
-        self.assertEqual(completed.returncode, 0)
+        self.assertNotEqual(completed.returncode, 0)
         self.assertIn("repair-required-nonterminal", completed.stdout)
 
     def test_apk_install_commands_are_forbidden(self):
@@ -208,6 +222,91 @@ class KHAwTest(unittest.TestCase):
         self.assertEqual(record["logSha256"], sha256_file(log))
         self.assertIn("physical-ok", log.read_text(encoding="utf-8"))
 
+    def test_build_artifact_glob_records_recursive_directory_hash(self):
+        state = dict(self.state)
+        state["projectRoot"] = self.project.as_posix()
+        command = (
+            f"{sys.executable} -c "
+            "\"from pathlib import Path; p=Path('dist'); p.mkdir(exist_ok=True); "
+            "(p/'index.html').write_text('<html/>'); (p/'app.js').write_text('void 0'); "
+            "(p/'app.css').write_text('body{}')\""
+        )
+        record = execute_tool(
+            self.run,
+            state,
+            tool_id="web-build",
+            command=command,
+            artifact_globs=["dist"],
+        )
+        artifact = record["artifacts"][0]
+        self.assertTrue(artifact["directory"])
+        self.assertEqual(artifact["fileCount"], 3)
+        self.assertEqual(artifact["sha256"], directory_artifact_record(self.project / "dist")["sha256"])
+        (self.project / "dist" / "app.js").write_text("changed", encoding="utf-8")
+        self.assertNotEqual(artifact["sha256"], directory_artifact_record(self.project / "dist")["sha256"])
+
+    def test_web_build_content_gate_rejects_incomplete_bundle(self):
+        build = self.project / "dist"
+        build.mkdir()
+        (build / "index.html").write_text("<html/>", encoding="utf-8")
+        log = self.run / "test" / "logs" / "web-build.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text("build passed", encoding="utf-8")
+        report = read_json(self.run / "test" / "test-report.json")
+        report["apkInstallationPolicy"] = "forbidden"
+        report["toolExecutions"] = [{
+            "executionId": "TOOL-WEB-BUILD",
+            "toolId": "web-build",
+            "satisfiesToolIds": ["web-build"],
+            "command": "npm run build",
+            "exitCode": 0,
+            "status": "passed",
+            "timedOut": False,
+            "logPath": log.relative_to(self.run).as_posix(),
+            "logSha256": sha256_file(log),
+            "artifacts": [directory_artifact_record(build)],
+        }]
+        write_json(self.run / "test" / "test-report.json", report)
+        issues = gate_test(self.run, self.state)
+        missing_groups = {
+            item["evidence"].get("contentGroup")
+            for item in issues
+            if item["code"] == "WEB_BUILD_CONTENT_MISSING"
+        }
+        self.assertEqual(missing_groups, {"javascript", "css"})
+
+    def test_webview_apk_gate_inspects_packaged_asset_groups(self):
+        apk = self.project / "app-debug.apk"
+        with zipfile.ZipFile(apk, "w") as archive:
+            archive.writestr("assets/index.html", "<html/>")
+        log = self.run / "test" / "logs" / "android-build.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text("assembleDebug passed", encoding="utf-8")
+        report = read_json(self.run / "test" / "test-report.json")
+        report["apkInstallationPolicy"] = "forbidden"
+        report["toolExecutions"] = [{
+            "executionId": "TOOL-ANDROID-BUILD",
+            "toolId": "android-gradle-build",
+            "satisfiesToolIds": ["android-gradle-build"],
+            "command": "gradlew.bat assembleDebug",
+            "exitCode": 0,
+            "status": "passed",
+            "timedOut": False,
+            "logPath": log.relative_to(self.run).as_posix(),
+            "logSha256": sha256_file(log),
+            "artifacts": [{"path": apk.as_posix(), "sha256": sha256_file(apk), "bytes": apk.stat().st_size}],
+        }]
+        write_json(self.run / "test" / "test-report.json", report)
+        state = dict(self.state)
+        state["targetPipeline"] = "app-mobile-webview"
+        issues = gate_test(self.run, state)
+        missing_groups = {
+            item["evidence"].get("assetGroup")
+            for item in issues
+            if item["code"] == "WEBVIEW_APK_ASSET_MISSING"
+        }
+        self.assertEqual(missing_groups, {"css", "javascript", "image"})
+
     def test_execute_tool_rejects_apk_install(self):
         state = dict(self.state)
         with self.assertRaises(ValueError):
@@ -219,9 +318,114 @@ class KHAwTest(unittest.TestCase):
         evidence.write_text("/plan output from actual session", encoding="utf-8")
         with self.assertRaises(ValueError):
             record_capability(self.run, capability_id="codex-plan", mode="native", evidence_file=evidence, invocation="/plan", session_id="")
-        record = record_capability(self.run, capability_id="codex-plan", mode="native", evidence_file=evidence, invocation="/plan", session_id="SESSION-1")
+        fake_session = self.run / "rollout-SESSION-1.jsonl"
+        fake_session.write_text(
+            json.dumps({"sessionId": "SESSION-1", "invocation": "/plan", "text": "fake " * 40}) + "\n",
+            encoding="utf-8",
+        )
+        with self.assertRaises(ValueError):
+            record_capability(
+                self.run,
+                capability_id="codex-plan",
+                mode="native",
+                evidence_file=evidence,
+                invocation="/plan",
+                session_id="SESSION-1",
+                session_evidence_file=fake_session,
+            )
+        session = self._write_codex_session("SESSION-1", "intake", "native-plan", "/plan")
+        record = record_capability(
+            self.run,
+            capability_id="codex-plan",
+            mode="native",
+            evidence_file=evidence,
+            invocation="/plan",
+            session_id="SESSION-1",
+            session_evidence_file=session,
+        )
         self.assertEqual(record["mode"], "native")
         self.assertEqual(record["evidenceSha256"], sha256_file(evidence))
+        self.assertEqual(record["sessionEvidenceSha256"], sha256_file(session))
+
+    def test_required_slash_fallback_cannot_pass(self):
+        evidence = self.run / "evidence" / "fallback-plan.txt"
+        evidence.parent.mkdir(parents=True, exist_ok=True)
+        evidence.write_text("physical diagnostic fallback output", encoding="utf-8")
+        record_capability(
+            self.run,
+            capability_id="codex-plan",
+            mode="fallback",
+            evidence_file=evidence,
+            invocation="kh-aw-state-plan",
+        )
+        gate = run_gate(self.run, self.state, "intake")
+        self.assertIn("NATIVE_SLASH_REQUIRED", {item["code"] for item in gate["issues"]})
+
+    def test_stage_status_prefix_cannot_pass(self):
+        self.assertTrue(stage_status_passed("passed"))
+        self.assertFalse(stage_status_passed("passed-fake"))
+        self.assertFalse(stage_status_passed("passed-awaiting-receipt"))
+
+    def test_status_rejects_complete_state_with_fake_stage_prefix(self):
+        gate_rows = []
+        for stage in STAGES:
+            path = self.run / "reports" / f"gate-{stage}.json"
+            write_json(path, {
+                "schemaVersion": "3.0",
+                "stage": stage,
+                "pass": True,
+                "issueCount": 0,
+                "issues": [],
+            })
+            gate_rows.append({"stage": stage, "sha256": sha256_file(path)})
+        receipt_path = self.run / "release" / "release-receipt.json"
+        write_json(receipt_path, {
+            "schemaVersion": "3.0",
+            "runId": self.state["runId"],
+            "status": "complete",
+            "gateReports": gate_rows,
+        })
+        state = read_json(self.run / "state.json")
+        state["status"] = "complete"
+        state["stageStatus"] = {stage: "passed" for stage in STAGES}
+        state["stageStatus"]["design"] = "passed-fake"
+        state["releaseReceiptSha256"] = sha256_file(receipt_path)
+        save_state(self.run, state)
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPTS / "kh_aw_cli.py"), "status", "--run-root", str(self.run)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("not exact approved passed statuses", completed.stdout)
+
+    def test_run_lock_is_checked_outside_intake(self):
+        lock_path = self.run / "contract" / "run-lock.json"
+        lock = read_json(lock_path)
+        lock["internalLanguage"] = "ko-KR"
+        write_json(lock_path, lock)
+        gate = run_gate(self.run, self.state, "analyze")
+        codes = {item["code"] for item in gate["issues"]}
+        self.assertTrue({"RUN_LOCK_TAMPERED", "RUN_LOCK_HASH_MISMATCH"} & codes)
+
+    def test_internal_ledgers_must_be_english_but_raw_user_text_is_allowed(self):
+        report = read_json(self.run / "analysis" / "analysis-ledger.json")
+        report["summary"] = "\ub0b4\ubd80 \ubd84\uc11d \uacb0\uacfc"
+        write_json(self.run / "analysis" / "analysis-ledger.json", report)
+        self.assertIn(
+            "INTERNAL_ARTIFACT_NOT_ENGLISH",
+            {item["code"] for item in internal_language_issues(self.run)},
+        )
+        requirements = read_json(self.run / "contract" / "requirements.json")
+        self.assertTrue(any("\uccab \ubc88\uc9f8" in item["requirement"] for item in requirements["requirements"]))
+
+    def test_korean_product_text_is_detected_from_physical_files(self):
+        korean = self.project / "korean.html"
+        english = self.project / "english.html"
+        korean.write_text("<button>\uc800\uc7a5</button><p>\uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4</p>", encoding="utf-8")
+        english.write_text("<button>Save</button>", encoding="utf-8")
+        self.assertGreater(korean_ui_character_count([korean]), 0)
+        self.assertEqual(korean_ui_character_count([english]), 0)
 
     def test_gate_writes_physical_hook_event(self):
         run_gate(self.run, self.state, "analyze")
@@ -238,12 +442,12 @@ class KHAwTest(unittest.TestCase):
     def test_freeform_test_claim_is_not_physical_evidence(self):
         report = read_json(self.run / "test" / "test-report.json")
         report["apkInstallationPolicy"] = "forbidden"
-        report["accessibilityChecks"] = [{"pass": True, "evidence": "검사 완료"}]
-        report["responsiveChecks"] = [{"pass": True, "evidence": "검사 완료"}]
-        report["securityChecks"] = [{"pass": True, "evidence": "검사 완료"}]
-        report["stateChecks"] = [{"pass": True, "evidence": "검사 완료"}]
-        report["performanceChecks"] = [{"pass": True, "evidence": "검사 완료"}]
-        report["visualRegressionChecks"] = [{"pass": True, "evidence": "검사 완료"}]
+        report["accessibilityChecks"] = [{"pass": True, "evidence": "\uac80\uc0ac \uc644\ub8cc"}]
+        report["responsiveChecks"] = [{"pass": True, "evidence": "\uac80\uc0ac \uc644\ub8cc"}]
+        report["securityChecks"] = [{"pass": True, "evidence": "\uac80\uc0ac \uc644\ub8cc"}]
+        report["stateChecks"] = [{"pass": True, "evidence": "\uac80\uc0ac \uc644\ub8cc"}]
+        report["performanceChecks"] = [{"pass": True, "evidence": "\uac80\uc0ac \uc644\ub8cc"}]
+        report["visualRegressionChecks"] = [{"pass": True, "evidence": "\uac80\uc0ac \uc644\ub8cc"}]
         write_json(self.run / "test" / "test-report.json", report)
         gate = run_gate(self.run, self.state, "test", enforce_order=False)
         codes = {item["code"] for item in gate["issues"]}
@@ -272,6 +476,74 @@ class KHAwTest(unittest.TestCase):
         write_json(policy_path, policy)
         gate = run_gate(self.run, self.state, "intake", enforce_order=False)
         self.assertIn("NATIVE_CAPABILITY_POLICY_TAMPERED", {item["code"] for item in gate["issues"]})
+
+    def test_target_inference_handles_webview_and_web(self):
+        webview = infer_target_pipeline("\ubd84\uc11d \ud6c4 HTML \uae30\ubc18 \ubaa8\ubc14\uc77c\uc571 Android WebView \uc571\uc73c\ub85c \uc81c\uc791", self.project)
+        self.assertEqual(webview["targetPipeline"], "app-mobile-webview")
+        web = infer_target_pipeline("\ud68c\uc0ac \uc18c\uac1c \uc6f9\ud398\uc774\uc9c0\uc640 \ubc18\uc751\ud615 \ub79c\ub529\ud398\uc774\uc9c0 \uc81c\uc791", None)
+        self.assertEqual(web["targetPipeline"], "web-responsive")
+
+    def test_dynamic_page_candidates_cover_common_framework_patterns(self):
+        source = self.temp / "candidate-source"
+        (source / "web").mkdir(parents=True)
+        (source / "android").mkdir()
+        (source / "flutter").mkdir()
+        (source / "web" / "routes.ts").write_text(
+            'const routes = [{ path: "/dashboard" }, { path: "/settings" }];',
+            encoding="utf-8",
+        )
+        (source / "android" / "HomeScreen.kt").write_text(
+            "@Composable\nfun HomeScreen() { Text(\"Home\") }",
+            encoding="utf-8",
+        )
+        (source / "flutter" / "profile_page.dart").write_text(
+            "class ProfilePage extends StatelessWidget {}",
+            encoding="utf-8",
+        )
+        payload = build_page_candidates(source, self.temp / "page-candidates.json")
+        kinds = {item["kind"] for item in payload["candidates"]}
+        entries = {item["routeOrEntry"] for item in payload["candidates"]}
+        self.assertIn("declared-route", kinds)
+        self.assertIn("android-compose-screen", kinds)
+        self.assertIn("flutter-screen", kinds)
+        self.assertIn("/dashboard", entries)
+
+    def test_unknown_target_pipeline_is_blocking(self):
+        state = dict(self.state)
+        state["targetPipeline"] = "unknown-needs-confirmation"
+        gate = run_gate(self.run, state, "intake", enforce_order=False)
+        self.assertIn("TARGET_PIPELINE_UNRESOLVED", {item["code"] for item in gate["issues"]})
+
+    def test_goal_capability_is_required_for_every_stage(self):
+        policy = read_json(self.run / "contract" / "native-capability-policy.json")
+        by_stage = {}
+        for item in policy["capabilities"]:
+            by_stage.setdefault(item["stage"], set()).add(item["preferredSlash"])
+        for stage in ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]:
+            self.assertIn("/goal", by_stage[stage])
+        required_ids = set(canonical_capability_ids())
+        self.assertIn("codex-artifact-research", required_ids)
+        self.assertNotIn("codex-hooks", required_ids)
+
+    def test_webview_rejects_bulk_copied_native_legacy_files(self):
+        analysis = self.temp / "analysis"
+        product = self.temp / "product"
+        source = analysis / "app" / "src" / "main" / "java" / "com" / "example" / "CustomerListActivity.kt"
+        copied = product / "app" / "src" / "main" / "legacy" / "java" / "com" / "example" / "CustomerListActivity.kt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        copied.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("class CustomerListActivity", encoding="utf-8")
+        copied.write_text("class CustomerListActivity", encoding="utf-8")
+        state = dict(self.state)
+        state.update({
+            "analysisMode": "analysis-folder-provided",
+            "analysisFolder": analysis.as_posix(),
+            "projectRoot": product.as_posix(),
+            "targetPipeline": "app-mobile-webview",
+        })
+        write_json(self.run / "design" / "page-inventory.json", {"pages": [{"pageId": "home"}]})
+        gate = run_gate(self.run, state, "implement", enforce_order=False)
+        self.assertIn("SOURCE_BULK_COPY_DETECTED", {item["code"] for item in gate["issues"]})
 
     def test_all_json_schemas_parse_and_require_physical_evidence(self):
         schema_root = PLUGIN_ROOT / "schemas"
@@ -319,6 +591,8 @@ class KHAwTest(unittest.TestCase):
             receipt.parent.mkdir(parents=True, exist_ok=True)
             session_id = f"SUB-SESSION-{index:02d}"
             invocation = f"/agents run {assignment['taskId']}"
+            session_evidence = self._write_codex_session(session_id, assignment["taskId"], f"worker-{index}")
+            session_evidence_sha = sha256_file(session_evidence)
             review = assignment["reviewTargetWorkerIds"]
             base = "same worker evidence" if duplicate_output else f"worker {index} independent evidence"
             content = "\n".join([
@@ -337,6 +611,8 @@ class KHAwTest(unittest.TestCase):
                 "sessionId": session_id, "delegationMode": "native-agents",
                 "invocation": invocation,
                 "dispatchContractSha256": assignment["dispatchContractSha256"],
+                "sessionEvidencePath": session_evidence.as_posix(),
+                "sessionEvidenceSha256": session_evidence_sha,
                 "issuedAt": f"2026-07-24T00:00:{index:02d}Z",
             })
             record_subagent_result(
@@ -347,6 +623,7 @@ class KHAwTest(unittest.TestCase):
                 session_id=session_id,
                 invocation=invocation,
                 invocation_receipt_file=receipt,
+                session_evidence_file=session_evidence,
                 evidence_file=evidence,
                 review_of_worker_ids=review,
             )
@@ -362,11 +639,13 @@ class KHAwTest(unittest.TestCase):
             *(f"acceptedWorkerId: {worker_id}" for worker_id in worker_ids),
             "lead merged all independent worker results, removed duplicates, resolved conflicts, and verified full scope coverage. " * 5,
         ]), encoding="utf-8")
+        lead_session_evidence = self._write_codex_session("LEAD-SESSION-1", "intake", "lead")
         record_lead_aggregation(
             self.run,
             stage="intake",
             lead_agent_id="INTAKE-LEAD",
             lead_session_id="LEAD-SESSION-1",
+            session_evidence_file=lead_session_evidence,
             evidence_file=aggregation,
             accepted_worker_ids=worker_ids,
             resolved_conflicts=["requirement wording overlap resolved"],
@@ -397,6 +676,7 @@ class KHAwTest(unittest.TestCase):
         def make_files(assignment, suffix, invocation):
             out = self.run / "orchestration" / "intake" / "outputs" / f"{suffix}.md"
             receipt = self.run / "orchestration" / "intake" / "receipts" / f"{suffix}.json"
+            session_evidence = self._write_codex_session(same_session, assignment["taskId"], suffix)
             out.write_text("\n".join([
                 assignment["workerId"], assignment["taskId"], same_session,
                 assignment["dispatchContractSha256"], assignment["scopeIds"][0],
@@ -407,22 +687,44 @@ class KHAwTest(unittest.TestCase):
                 "taskId": assignment["taskId"], "sessionId": same_session,
                 "delegationMode": "native-agents", "invocation": invocation,
                 "dispatchContractSha256": assignment["dispatchContractSha256"],
+                "sessionEvidencePath": session_evidence.as_posix(),
+                "sessionEvidenceSha256": sha256_file(session_evidence),
                 "issuedAt": "2026-07-24T00:00:00Z" if suffix == "one" else "2026-07-24T00:00:01Z",
             })
-            return out, receipt
+            return out, receipt, session_evidence
 
-        one, receipt_one = make_files(first, "one", "/agents first")
-        two, receipt_two = make_files(second, "two", "/agents second")
+        one, receipt_one, session_one = make_files(first, "one", "/agents first")
+        two, receipt_two, session_two = make_files(second, "two", "/agents second")
         record_subagent_result(
             self.run, stage="intake", worker_id=first["workerId"], task_id=first["taskId"],
             session_id=same_session, invocation="/agents first", invocation_receipt_file=receipt_one,
+            session_evidence_file=session_one,
             evidence_file=one, review_of_worker_ids=first["reviewTargetWorkerIds"],
         )
         with self.assertRaises(ValueError):
             record_subagent_result(
                 self.run, stage="intake", worker_id=second["workerId"], task_id=second["taskId"],
                 session_id=same_session, invocation="/agents second", invocation_receipt_file=receipt_two,
+                session_evidence_file=session_two,
                 evidence_file=two, review_of_worker_ids=second["reviewTargetWorkerIds"],
+            )
+
+    def test_subagent_delegation_requires_native_agents(self):
+        plan = ensure_agent_plan(self.run, self.state, "intake", force=True)
+        assignment = plan["assignments"][0]
+        with self.assertRaises(ValueError):
+            record_subagent_result(
+                self.run,
+                stage="intake",
+                worker_id=assignment["workerId"],
+                task_id=assignment["taskId"],
+                session_id="SUB-SESSION-NONNATIVE",
+                invocation="independent task",
+                invocation_receipt_file=self.run / "missing-receipt.json",
+                session_evidence_file=self.run / "missing-session.jsonl",
+                evidence_file=self.run / "missing-output.md",
+                review_of_worker_ids=assignment["reviewTargetWorkerIds"],
+                delegation_mode="independent-codex-task",
             )
 
     def test_complete_subagent_orchestration_has_no_agent_issues(self):
@@ -487,7 +789,7 @@ class KHAwTest(unittest.TestCase):
             ensure_agent_plan(self.run, self.state, "intake", force=True, selected_count=3)
         reason = self.run / "orchestration" / "intake" / "lead-scale-reason.md"
         reason.parent.mkdir(parents=True, exist_ok=True)
-        reason.write_text("프로젝트의 독립 규제 검토와 추가 데이터 경계 검증이 필요하여 worker 한 명을 증원합니다. " * 5, encoding="utf-8")
+        reason.write_text("\ud504\ub85c\uc81d\ud2b8\uc758 \ub3c5\ub9bd \uaddc\uc81c \uac80\ud1a0\uc640 \ucd94\uac00 \ub370\uc774\ud130 \uacbd\uacc4 \uac80\uc99d\uc774 \ud544\uc694\ud558\uc5ec worker \ud55c \uba85\uc744 \uc99d\uc6d0\ud569\ub2c8\ub2e4. " * 5, encoding="utf-8")
         plan = ensure_agent_plan(self.run, self.state, "intake", force=True, selected_count=3, justification_file=reason)
         self.assertEqual(plan["safetyFloorSubAgents"], 2)
         self.assertEqual(plan["selectedSubAgents"], 3)
@@ -512,6 +814,17 @@ class KHAwTest(unittest.TestCase):
         try:
             errors = validate_distribution(PLUGIN_ROOT, marketplace_root)
             self.assertTrue(any("orchestration.py" in item for item in errors))
+        finally:
+            target.write_bytes(backup)
+
+    def test_distribution_validator_rejects_stale_release_manifest_hash(self):
+        marketplace_root = PLUGIN_ROOT.parents[1]
+        target = marketplace_root / "FINAL_VALIDATION_REPORT.md"
+        backup = target.read_bytes()
+        target.write_bytes(backup + b"\nmanifest tamper\n")
+        try:
+            errors = validate_distribution(PLUGIN_ROOT, marketplace_root)
+            self.assertTrue(any("release manifest hash/size mismatch" in item for item in errors))
         finally:
             target.write_bytes(backup)
 

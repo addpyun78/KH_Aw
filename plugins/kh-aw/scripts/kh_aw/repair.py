@@ -14,6 +14,7 @@ from .contracts import (
     remove_forbidden_manual_keys,
     research_plan_template,
     review_template,
+    stage_status_passed,
     test_template,
 )
 from .protection import restore_snapshot
@@ -114,7 +115,7 @@ def deterministic_repair(run_root: Path, state: dict[str, Any], stage: str, issu
         })
     if "STAGE_ORDER_VIOLATION" in codes:
         for candidate, status in state.get("stageStatus", {}).items():
-            if not str(status).startswith("passed"):
+            if not stage_status_passed(status):
                 state["currentStage"] = candidate
                 actions.append({"action": "reroute-to-earliest-incomplete-stage", "stage": candidate})
                 break
@@ -123,7 +124,7 @@ def deterministic_repair(run_root: Path, state: dict[str, Any], stage: str, issu
         plan = read_json(run_root / "orchestration" / stage / "agent-plan.json", {})
         machine_actions.append({
             "executor": "codex-subagent-orchestrator",
-            "mode": "native-/agents-or-independent-codex-tasks",
+            "mode": "native-/agents-required",
             "stage": stage,
             "requiredWorkerCount": plan.get("recommendedSubAgents", 2),
             "minimum": 2,
@@ -131,8 +132,18 @@ def deterministic_repair(run_root: Path, state: dict[str, Any], stage: str, issu
             "dispatchManifest": (run_root / "orchestration" / stage / "dispatch-manifest.json").as_posix(),
             "promptOnlyForbidden": True,
         })
-    if any(code.startswith("NATIVE_CAPABILITY_") for code in codes):
-        machine_actions.append({"executor": "exercise-native", "mode": "physical-fallback", "stage": stage})
+    native_codes = {
+        code for code in codes
+        if code.startswith("NATIVE_CAPABILITY_") or code in {"NATIVE_SLASH_REQUIRED", "NATIVE_CAPABILITY_SESSION_LINK_INVALID"}
+    }
+    if native_codes:
+        machine_actions.append({
+            "executor": "codex-native-slash",
+            "mode": "native-session-invocation-required",
+            "stage": stage,
+            "issueCodes": sorted(native_codes),
+            "fallbackAllowed": False,
+        })
     if any(code in codes for code in {"TOOL_DISCOVERY_EVIDENCE_MISSING", "TARGET_TOOLCHAIN_COVERAGE_INCOMPLETE", "TOOL_EXECUTIONS_MISSING", "TOOL_EXECUTION_FAILED"}):
         machine_actions.append({"executor": "run-toolchain", "mode": "actual-command-execution", "target": state.get("targetPipeline")})
     if any(code in codes for code in {"ACTUAL_SCREENSHOT_INVALID", "REVIEW_PAGE_COVERAGE_INCOMPLETE", "PAGE_REVIEW_FAILED"}):
@@ -147,7 +158,7 @@ def deterministic_repair(run_root: Path, state: dict[str, Any], stage: str, issu
         "issueCodes": sorted(codes),
         "deterministicActions": actions,
         "machineRepairActions": machine_actions,
-        "instruction": "실제 원인 파일과 증거를 수정한 뒤 동일 stage advance를 재실행한다. 보고서 문장만 고쳐서는 통과할 수 없다.",
+        "instruction": "Repair the physical root-cause files and evidence, then rerun the same stage. Editing prose alone cannot pass.",
     }
     write_json(run_root / "next-action.json", next_action)
     save_state(run_root, state)
@@ -178,17 +189,17 @@ def create_repair_ticket(run_root: Path, state: dict[str, Any], stage: str, gate
         "signatureAttempt": entry["attempt"],
         "strategyGeneration": entry["strategyGeneration"],
         "rootCauseRequired": True,
-        "rule": "실패 상태로 종료하지 말고, 문제의 근본원인을 실제 파일에서 수정한 뒤 같은 게이트를 재실행한다.",
+        "rule": 'Do not convert a failed gate into completion. Repair the physical root cause and rerun the same gate.',
         "strategyChangeRequired": entry["strategyGeneration"] > 1,
         "issues": gate.get("issues", []),
         "deterministicRepair": deterministic,
         "repairEvidence": [],
         "closureEvidence": {},
         "requiredEvidence": [
-            "수정된 실제 파일 경로",
-            "수정 전후 SHA-256",
-            "재실행한 검증 명령과 종료코드",
-            "동일 실패가 재발하지 않는 근본원인 설명",
+            'physical paths of changed files',
+            'SHA-256 before and after repair',
+            'rerun verification command and exit code',
+            'root-cause explanation proving the same failure will not recur',
         ],
         "nextCommand": f"python3 scripts/kh_aw_cli.py advance --run-root {run_root.as_posix()} --stage {stage}",
     }

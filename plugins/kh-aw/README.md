@@ -1,21 +1,21 @@
 # KH_Aw Codex Plugin 3.2.0
 
-- 표시 이름: **KH_Aw**
-- 플러그인 ID: **kh-aw**
-- 대상: Codex 웹 Git 마켓플레이스/플러그인
-- 단계별 하위 AI: **동적 최소 2개·최대 60개**
-- APK 설치: **금지**
+- Display name: **KH_Aw**
+- Plugin ID: **kh-aw**
+- Target: Codex Git marketplace and plugin installation
+- Independent workers per stage: **dynamic minimum 2, maximum 60**
+- APK installation: **forbidden**
 
-## 포함 스킬
+## Included skills
 
-1. `kh-aw-full-cycle`: 전체 8단계 실행과 자동수리
-2. `kh-aw-multi-agent-orchestration`: 단계별 대장 AI·2~60개 독립 하위 AI
-3. `kh-aw-audit-upgrade`: 전체 파일·요구사항·로직 전수조사
-4. `kh-aw-research-design`: 실제 본문 추출과 전체 페이지 목업
-5. `kh-aw-implementation-repair`: 실제 구현·추적·비종료 자동수리
-6. `kh-aw-release-company`: 실제 도구 검증과 회사용 릴리스
+1. `kh-aw-full-cycle`: all eight stages and repair flow
+2. `kh-aw-multi-agent-orchestration`: stage lead plus 2-60 independent workers
+3. `kh-aw-audit-upgrade`: exhaustive file, requirement, and logic audit
+4. `kh-aw-research-design`: direct source-body extraction and every-page mockups
+5. `kh-aw-implementation-repair`: physical implementation evidence and repair
+6. `kh-aw-release-company`: target tool verification and release controls
 
-## 실행 진입점
+## Command entry points
 
 ```bash
 python3 scripts/kh_aw_cli.py doctor --plugin-root . --marketplace-root ../..
@@ -29,24 +29,29 @@ python3 scripts/kh_aw_cli.py run-toolchain --run-root <run> --strict
 python3 scripts/kh_aw_cli.py finalize --run-root <run> --strict
 ```
 
-## 하위 AI 물리 게이트
+## Physical worker gate
 
-각 단계의 `agent-plan.json`은 프로젝트 복잡도를 다시 계산하여 2~60개를 배정합니다. 계획 파일의 수량이나 역할을 임의로 낮춰도 게이트가 원래 계산값과 fingerprint를 비교하므로 통과하지 않습니다.
+Every stage recalculates a project-specific 2-60 worker plan. The gate compares the saved count, roles, assignments, and fingerprint with the calculated plan, so lowering the plan manually cannot pass.
 
-각 하위 AI는 다음이 필요합니다.
+Every worker requires:
 
-- 계획에 존재하는 worker/task/role
-- 독립 Codex 세션 ID
-- `/agents` 실제 호출 또는 독립 Codex task
-- run root 내부 물리 결과 파일
-- 고유 SHA-256
-- 최소 한 건의 교차검토
-- 모든 worker를 수용한 대장 AI 집계 파일
+- a planned worker, task, and role;
+- an independent Codex session ID;
+- a physical Codex rollout JSONL file;
+- a native `/agents` invocation or a genuinely independent Codex task;
+- a physical output inside the run root;
+- a unique SHA-256;
+- at least one cross-review across the worker set; and
+- a lead aggregation that accepts every required worker.
 
-`exercise-native`로 생성한 `/agents` fallback 배정표는 하위 AI 완료 증거가 아닙니다.
+An `exercise-native` fallback inventory is not worker-completion evidence.
 
-## 도구 검증
+## Tool verification
 
-웹은 Chromium·Firefox·WebKit·axe·Lighthouse·시각회귀를, Android는 Gradle·스크린샷 테스트·AVD/ADB 상태·Logcat을, iOS는 xcodebuild·Simulator를 대상으로 합니다. 도구 실행 로그·종료코드·버전·산출물·SHA-256이 없으면 통과하지 않습니다.
+Web targets require configured browser engines, accessibility, Lighthouse, and visual checks. Android targets require Gradle, screenshot tests, AVD or ADB state, and Logcat evidence. iOS targets require `xcodebuild` and Simulator evidence. A required tool does not pass without a physical log, exit code, version, artifact, and SHA-256.
 
-Android APK 설치 명령은 실행 전에 거부되며 실행 기록에서도 다시 탐지됩니다.
+Android APK installation commands are rejected before execution and detected again in recorded command evidence.
+
+## Language boundary
+
+Codex-facing prompts, policies, contracts, ledgers, gate messages, repair tickets, and worker instructions are English. User-visible IDE panel guidance and the generated app or web interface remain Korean. A release fails when internal evidence contains Korean or broken encoding, or when a Korean-targeted product has no Korean interface text.

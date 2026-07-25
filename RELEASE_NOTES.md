@@ -4,7 +4,7 @@
 
 - 모든 8단계에 대장 AI·독립 하위 AI 오케스트레이션 적용
 - 배포본 완전성 validator 추가: 엔진·스킬·스키마·테스트·CI·감사자료 누락 시 doctor 실패
-- 회귀 테스트 37개 전부 통과
+- 회귀 테스트 50개 이상 전부 통과
 
 - 대장 AI가 계산된 안전 최저치 이상에서 물리 근거 파일로 하위 AI 수를 증원 가능
 - worker별 불변 dispatch JSON과 실제 디스크 SHA-256
@@ -21,7 +21,7 @@
 - 동일 session·동일 결과 해시 차단
 - 하위 AI 교차검토 필수
 - 대장 AI의 전체 worker 집계·충돌 해결 증거 필수
-- `/agents` fallback을 실제 하위 AI 완료로 오인하지 않도록 분리
+- 필수 slash 기능 fallback 통과 금지와 실제 Codex rollout JSONL 검증
 - 하위 AI 정책·계획 변조 자동복구
 - 집계만 누락된 경우 기존 유효 worker 결과 보존
 - orchestration plan·ledger·aggregation을 단계 checkpoint와 release receipt에 포함

@@ -3,9 +3,11 @@
   "$id": "https://github.com/addpyun78/KH_Aw/schemas/native-capability-policy.schema.json",
   "title": "KH_Aw native capability policy",
   "type": "object",
-  "required": ["schemaVersion", "capabilities"],
+  "required": ["schemaVersion", "requiredEvidenceMode", "fallbackSatisfiesRequiredCapability", "capabilities", "records"],
   "properties": {
     "schemaVersion": {"const": "3.0"},
+    "requiredEvidenceMode": {"const": "native"},
+    "fallbackSatisfiesRequiredCapability": {"const": false},
     "capabilities": {
       "type": "array",
       "minItems": 9,
@@ -17,9 +19,53 @@
           "id": {"type": "string", "minLength": 1},
           "stage": {"type": "string", "enum": ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]},
           "preferredSlash": {"type": "string", "pattern": "^/"},
-          "required": {"const": true},
+          "required": {"type": "boolean"},
           "fallback": {"type": "string", "minLength": 1}
         },
+        "additionalProperties": true
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "capabilityId",
+          "stage",
+          "mode",
+          "preferredSlash",
+          "invocation",
+          "evidencePath",
+          "evidenceSha256",
+          "sessionId",
+          "status"
+        ],
+        "properties": {
+          "mode": {"enum": ["native", "fallback"]},
+          "evidenceSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "status": {"const": "verified"},
+          "sessionEvidenceSha256": {"type": "string", "pattern": "^$|^[a-f0-9]{64}$"},
+          "sessionEvidenceEventCount": {"type": "integer", "minimum": 0}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"mode": {"const": "native"}}},
+            "then": {
+              "required": [
+                "sessionEvidencePath",
+                "sessionEvidenceSha256",
+                "sessionEvidenceEventCount"
+              ],
+              "properties": {
+                "sessionId": {"type": "string", "minLength": 8},
+                "sessionEvidencePath": {"type": "string", "minLength": 1},
+                "sessionEvidenceSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+                "sessionEvidenceEventCount": {"type": "integer", "minimum": 1}
+              }
+            }
+          }
+        ],
         "additionalProperties": true
       }
     }
