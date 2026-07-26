@@ -29,7 +29,7 @@ def scan_release_root(root: Path) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
     file_count = 0
     total_bytes = 0
-    for path in iter_files(root, include_ignored=True):
+    for path in iter_files(root, extra_ignored={".git"}, include_ignored=True):
         file_count += 1
         try:
             size = path.stat().st_size

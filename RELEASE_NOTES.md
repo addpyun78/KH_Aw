@@ -27,5 +27,5 @@
 - Add 15 public implementation comparisons, actual failure reproduction, architecture,
   beginner documents, and a 40-condition status ledger.
 
-External GitHub publication, supported plugin-manager reinstall, and fresh-session
-`@kh-aw` invocation are intentionally not recorded as passed in this source snapshot.
+GitHub branch publication is recorded at commit `f58fe40`. Supported plugin-manager
+reinstall and fresh-session `@kh-aw` invocation are not recorded as passed.

@@ -10,7 +10,7 @@ resume, semantic requirement compilation, source reachability, task graph, issue
 classification, independent verification, claim verification, version ledger, and
 deterministic packaging.
 
-The audit intentionally leaves conditions 26, 27, 37, and 38 open because the exact
-redesigned state has not been publicly installed into a fresh Codex session. Several
+The audit intentionally leaves conditions 26, 27, 37, and 38 open because the published
+redesigned state has not been installed into a fresh Codex session. Several
 full-run conditions also remain pending real eight-stage evidence. Nothing in this
 document overrides those statuses.

@@ -22,6 +22,6 @@ inventory returned one duplicate group and `shadowingRisk: true`.
 
 ## Required repair
 
-Publish/install the redesigned package through the supported plugin manager, start a
-new Codex session, then verify that only `kh-aw` is visible. Do not edit cache files by
-hand and do not infer activation from a cache directory.
+Install published version `4.0.0` through the supported plugin manager, start a new
+Codex session, then verify that only `kh-aw` is visible. Do not edit cache files by hand
+and do not infer activation from a cache directory.

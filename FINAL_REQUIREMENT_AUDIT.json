@@ -7,5 +7,6 @@
   "criteriaLedger": "COMPLETION_CRITERIA_LEDGER.md",
   "terminalClaimAllowed": false,
   "openExternalCriteria": [26, 27, 37, 38],
-  "reason": "The exact redesigned source has not been published, installed through the supported plugin manager, and invoked in a fresh Codex session."
+  "publishedCommit": "f58fe40",
+  "reason": "The published redesigned source has not been installed through the supported plugin manager and invoked in a fresh Codex session."
 }

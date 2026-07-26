@@ -5,6 +5,8 @@ Repository: `https://github.com/addpyun78/KH_Aw`
 Branch: `kh-aw-marketplace`
 Tag pattern: `kh-aw-v4.0.0`
 
+Published branch commit during this redesign: `f58fe40`.
+
 Before a publish, run from the repository root:
 
 ```powershell

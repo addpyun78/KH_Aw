@@ -1,6 +1,6 @@
 {
   "schemaVersion": "4.0",
-  "generatedAt": "2026-07-26T07:38:41.379606+00:00",
+  "generatedAt": "2026-07-26T07:42:22.916002+00:00",
   "plugin": "kh-aw",
   "version": "4.0.0",
   "lineEndingPolicy": "raw-or-normalized-lf-for-utf8-text",
@@ -367,10 +367,10 @@
     },
     {
       "path": "scripts/kh_aw/security.py",
-      "sha256": "b973d21febbc9bd91c7942041cdc88c08b8d1f36f6059ea1f20aba2e28c19baa",
-      "bytes": 3104,
-      "normalizedLfSha256": "b973d21febbc9bd91c7942041cdc88c08b8d1f36f6059ea1f20aba2e28c19baa",
-      "normalizedLfBytes": 3104
+      "sha256": "27aa199b531e73c307611eaeec6e7a54e11d51450374f7bcf1b4a6a46045b72f",
+      "bytes": 3128,
+      "normalizedLfSha256": "27aa199b531e73c307611eaeec6e7a54e11d51450374f7bcf1b4a6a46045b72f",
+      "normalizedLfBytes": 3128
     },
     {
       "path": "scripts/kh_aw/session_forensics.py",

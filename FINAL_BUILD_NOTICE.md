@@ -5,10 +5,10 @@ tests, packaging pipeline, and beginner documents. Local source doctor, distribu
 doctor, regression tests, and cache/CRLF/shadowing/package E2E must be rerun after the
 last manifest generation.
 
-This notice does not assert public publication or active Codex installation. The current
-machine cache still contains the prior six-skill `3.2.1` snapshot. The exact redesigned
-source state must be published and installed through the supported plugin manager, then
-opened in a new Codex session.
+The redesigned source and ZIP were published to the `kh-aw-marketplace` branch at commit
+`f58fe40`. This notice does not assert active Codex installation. The current machine
+cache still contains the prior six-skill `3.2.1` snapshot. Version `4.0.0` must be
+installed through the supported plugin manager, then opened in a new Codex session.
 
 Authoritative local ledgers:
 

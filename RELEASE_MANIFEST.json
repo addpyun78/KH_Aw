@@ -3,7 +3,7 @@
   "plugin": "kh-aw",
   "version": "4.0.0",
   "fileCount": 128,
-  "totalBytes": 2659996,
+  "totalBytes": 2660405,
   "files": [
     {
       "path": ".agents/plugins/marketplace.json",
@@ -122,33 +122,33 @@
     },
     {
       "path": "FINAL_BUILD_NOTICE.md",
-      "sha256": "2989802722579e7c5ebfc5dbbbd51d4cc7b3285daf2985b1d4f2d4c68c960ba8",
-      "bytes": 786
+      "sha256": "278c6057877d20991d9b10252017d4446b8a1de20c4a888bd25b98363d3df227",
+      "bytes": 832
     },
     {
       "path": "FINAL_REQUIREMENT_AUDIT.json",
-      "sha256": "1b0cb1018bb32efed6e7b1e8ae5f72b66c9efb184ebb162fb46656633b913333",
-      "bytes": 494
+      "sha256": "d7711971ac81c0cd7f1080ceff066eb86b7051766d0d2d43ecb98c37bdbc76aa",
+      "bytes": 518
     },
     {
       "path": "FINAL_REQUIREMENT_AUDIT.md",
-      "sha256": "1c54d2a070b17adc443ae7f575896e6d7526a4801cf4fe65b43ca55251d8e2ef",
-      "bytes": 904
+      "sha256": "26d22725711daac47b352efd2be8b4f8d941f87be71594f8a909a1045e3aaca8",
+      "bytes": 899
     },
     {
       "path": "FINAL_SCORE_REPORT.md",
-      "sha256": "2270dfc0f3324189d97c71884afcccdf13e4f7d413280acdad4293b7a18144f6",
-      "bytes": 553
+      "sha256": "3a357aa36275a89c866ad7a6cbfebc0864f95257190b108e4d26c3f4b7d216ec",
+      "bytes": 545
     },
     {
       "path": "FINAL_SECURITY_SCAN.json",
-      "sha256": "7c8362ee3ab76b13d0171eb44fd7c8ef0c0fc8f2a1f6b681eb92a2370a028260",
+      "sha256": "63b29c2946e11c8c7021626ccd57e4fd19123dc04b49dd3a0902e4c096913f23",
       "bytes": 250
     },
     {
       "path": "FINAL_VALIDATION_REPORT.md",
-      "sha256": "3df3f8d638041852afbe3cb830ef027a66583f9f215abf86984439efbc0226cc",
-      "bytes": 945
+      "sha256": "149dcdae68aafd729f0a84873297c03fd0628862204d4b8ebfa00d0befabbf63",
+      "bytes": 1118
     },
     {
       "path": "FULL_STAGE_REPORT.md",
@@ -157,8 +157,8 @@
     },
     {
       "path": "GITHUB_PUBLISH.md",
-      "sha256": "9e3c35dd3af9e8722f9cd8d9171f32de9df83d9de5ede0037dcf5f5b399b4d30",
-      "bytes": 996
+      "sha256": "2f5a49a54b161d38fb7bf04b3667fe25f3923c21b14dac65ac4949e22ae1b5cf",
+      "bytes": 1054
     },
     {
       "path": "INSTALL_CODEX_WEB.md",
@@ -217,7 +217,7 @@
     },
     {
       "path": "plugins/kh-aw/PACKAGE_MANIFEST.json",
-      "sha256": "6a05164a18764b2166a90d3a55d79b9fd4cf229e7f165d840d6b5df092200481",
+      "sha256": "5f67977ae0bf0f1b933903c157b419dd61aa15679cb993d9a04c8d8444139e26",
       "bytes": 19554
     },
     {
@@ -442,8 +442,8 @@
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/security.py",
-      "sha256": "b973d21febbc9bd91c7942041cdc88c08b8d1f36f6059ea1f20aba2e28c19baa",
-      "bytes": 3104
+      "sha256": "27aa199b531e73c307611eaeec6e7a54e11d51450374f7bcf1b4a6a46045b72f",
+      "bytes": 3128
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/session_forensics.py",
@@ -532,13 +532,13 @@
     },
     {
       "path": "RELEASE_NOTES.md",
-      "sha256": "0be48913eb46917bbef6ea3efff3ede70ef229d08bf3a43c217ae088ee91037c",
-      "bytes": 1272
+      "sha256": "4057d876eac1e96328bc65f370cd94a818dfccdc9138226963138a5ebdbd59e4",
+      "bytes": 1263
     },
     {
       "path": "reproduction/CACHE_SHADOWING_REPORT.md",
-      "sha256": "4143f6f195105e84226f9ca9beaae16dfc14ae13c319b422006df2aed3750ce7",
-      "bytes": 1133
+      "sha256": "eb9c33289dcef2a52b0496986691be04cc0bc87e33904d35e5f14cd8d5bcfb63",
+      "bytes": 1128
     },
     {
       "path": "reproduction/DOCTOR_RUNS.jsonl",
@@ -637,8 +637,8 @@
     },
     {
       "path": "TEST_EVIDENCE.md",
-      "sha256": "77244ac679cdc59e0611c15d577dd622f3b7faddb6056a70720f12a03ff7b32c",
-      "bytes": 1587
+      "sha256": "b141d0e7b0bb6ea970aa665d293d6f4306a1d66b51a202370734b55f2039d9e6",
+      "bytes": 1698
     },
     {
       "path": "VERSION_LEDGER.json",
