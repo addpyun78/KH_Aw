@@ -1,26 +1,21 @@
-# KH_Aw 3.2.0 시스템 검증 보고서
+# KH_Aw 4.0.0 Validation Report
 
-## 현재 확인된 결과
+## Verified locally
 
-| 검증 항목 | 결과 |
-|---|---|
-| Python 강제 로직 회귀 테스트 | 53/53 통과 |
-| Python 문법 검사 | 통과 |
-| Node 검증 스크립트 문법 검사 | 통과 |
-| JSON 15개 구조 검사 | 통과 |
-| YAML 7개 구조 검사 | 통과 |
-| 플러그인·마켓플레이스 구조 검사 | 통과 |
-| 플러그인 파일 해시·크기 검사 | 통과 |
-| 루트 배포 파일 해시·크기 검사 | 통과 |
-| 비밀키·브라우저 프로필 등 보안 검사 | 발견 0개 |
-| Codex 내부 영어 / 사용자 화면 한국어 분리 검사 | 통과 |
+- 15 public plugin implementations recorded with URLs and commits.
+- Actual historical doctor failure and manual continuation traced to a physical session.
+- Source plugin doctor and repository distribution doctor passed during redesign.
+- Versioned-cache, CRLF checkout, duplicate-shadow, and deterministic-ZIP cases passed.
+- Regression suite passed after the first full implementation pass.
+- One visible source skill named `kh-aw`.
 
-## 이번 검증이 보장하는 범위
+## Conditions still open
 
-이번 결과는 KH_Aw 시스템의 정책, 장부, 게이트, 명령 반환값, 패키지 구조가 서로 연결되어 있는지를 검사한 결과입니다. 누락, 미실행, 가짜 증거, 대량 복사, 잘못된 프로젝트 유형, 필수 슬래시 기능 미사용이 있으면 완료를 차단하도록 검사했습니다.
+- Publish this exact source state to GitHub.
+- Install the resulting archive through the supported Codex plugin manager.
+- Open a new session and invoke `@kh-aw` directly.
+- Run a complete eight-stage real project through release receipt.
+- Reinstall with an older cache retained and repeat the full Codex E2E.
 
-## 아직 실제 프로젝트에서 확인해야 하는 범위
-
-이 작업은 `C:\testAPP`을 다시 만드는 작업이 아니므로 실제 대상 앱의 APK 실행이나 실제 웹사이트의 브라우저 화면을 새로 검증하지 않았습니다. GitHub에 새 버전을 올리고 Codex에 다시 설치한 뒤 동일 지시를 실행해야 최종 제품 검증 증거가 생성됩니다.
-
-따라서 이 문서는 “모든 미래 프로젝트가 자동으로 완벽하다”는 뜻이 아닙니다. KH_Aw가 시작된 작업에서는 증거가 없으면 완료할 수 없도록 시스템 경로를 강화했다는 뜻입니다.
+The exact 40-condition status is in `COMPLETION_CRITERIA_LEDGER.md`. Open conditions
+are not converted into passes.

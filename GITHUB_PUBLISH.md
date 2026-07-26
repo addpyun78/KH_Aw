@@ -1,17 +1,22 @@
-# GitHub Publication Design
+# GitHub Publication Procedure
 
-Target repository: `addpyun78/KH_Aw`  
-Target branch: `kh-aw-marketplace`
+Repository: `https://github.com/addpyun78/KH_Aw`
 
-The separate branch protects the existing KH_Aw main branch while placing `.agents/plugins/marketplace.json` at the Git repository root, which remote marketplace discovery requires.
+Branch: `kh-aw-marketplace`
+Tag pattern: `kh-aw-v4.0.0`
 
-## Release tags
+Before a publish, run from the repository root:
 
-Use tags such as `kh-aw-v3.2.0`. Before tagging:
-
-```bash
-python3 plugins/kh-aw/scripts/kh_aw_cli.py doctor --plugin-root plugins/kh-aw --marketplace-root .
-python3 -m unittest discover -s plugins/kh-aw/tests -p 'test_*.py' -v
+```powershell
+python -m pytest -q
+Get-ChildItem plugins/kh-aw/scripts/*.mjs | ForEach-Object { node --check $_.FullName }
+python plugins/kh-aw/scripts/kh_aw_cli.py build-package-manifest --plugin-root plugins/kh-aw
+python plugins/kh-aw/scripts/kh_aw_cli.py build-release-manifest --marketplace-root .
+python plugins/kh-aw/scripts/kh_aw_cli.py doctor --plugin-root plugins/kh-aw --marketplace-root . --distribution
+python plugins/kh-aw/scripts/kh_aw_cli.py e2e --plugin-root plugins/kh-aw
+python plugins/kh-aw/scripts/kh_aw_cli.py build-package --plugin-root plugins/kh-aw
 ```
 
-Review the Git diff to ensure the branch excludes browser profiles, cookie/login databases, `.git` copies, `node_modules`, runtime `data`, `output`, `scratch`, logs, backups, and user preferences.
+Commit and publish only the exact state tested above. Install through the supported
+Codex plugin manager, open a new session, invoke `@kh-aw`, and save that session evidence.
+Do not edit a cache directory to simulate installation.

@@ -28,6 +28,14 @@ from kh_aw.inventory import build_inventory
 from kh_aw.page_inventory import build_page_candidates
 from kh_aw.integrity import build_package_manifest, validate_package_manifest
 from kh_aw.plugin_validate import validate_marketplace, validate_plugin
+from kh_aw.doctor import run_doctor, run_project_doctor
+from kh_aw.installation import inspect_installations, resolve_active_installation
+from kh_aw.packaging import build_deterministic_zip, build_release_manifest
+from kh_aw.reachability import analyze_source_reachability
+from kh_aw.runtime import bootstrap_project_runtime, resume_run
+from kh_aw.versioning import version_ledger
+from kh_aw.e2e import run_local_e2e
+from kh_aw.verifier import verify_run
 from kh_aw.orchestration import (
     ensure_agent_plan, record_subagent_result, record_lead_aggregation,
     canonical_agent_plan, orchestration_issues,
@@ -60,7 +68,7 @@ from kh_aw.util import (
     write_json,
 )
 
-ENGINE_VERSION = "3.2.1"
+ENGINE_VERSION = "4.0.0"
 STAGE_ARTIFACTS = {
     "intake": ["contract/user-instructions.txt", "contract/requirements.json"],
     "analyze": ["inventory/inventory-summary.json", "inventory/inventory.jsonl", "inventory/inventory.csv", "inventory/page-candidates.json", "analysis/analysis-ledger.json"],
@@ -196,6 +204,8 @@ def cmd_init(args: argparse.Namespace) -> int:
     source_root = analysis_folder or project_root
     inventory = build_inventory(source_root, run_root / "inventory", include_all=True, excluded_roots=(workspace_root,))
     page_candidates = build_page_candidates(source_root, run_root / "inventory" / "page-candidates.json")
+    reachability = analyze_source_reachability(source_root)
+    write_json(run_root / "inventory" / "source-reachability.json", reachability)
     protection = create_protected_snapshot(analysis_folder, run_root) if analysis_folder else None
     state = {
         "schemaVersion": "3.0",
@@ -222,9 +232,11 @@ def cmd_init(args: argparse.Namespace) -> int:
             "path": (run_root / "inventory" / "page-candidates.json").as_posix(),
             "candidateCount": page_candidates.get("candidateCount", 0),
         },
+        "sourceReachability": (run_root / "inventory" / "source-reachability.json").as_posix(),
         "protection": {"enabled": bool(protection), "archive": protection.get("archive") if protection else ""},
         "repair": {"globalAttempt": 0, "signatures": {}, "activeTicket": ""},
     }
+    state["projectRuntime"] = bootstrap_project_runtime(SCRIPT_ROOT.parent, workspace_root, ENGINE_VERSION)
     write_run_lock(run_root, state)
     save_state(run_root, state)
     ensure_agent_plan(run_root, state, "intake", force=True)
@@ -1116,10 +1128,72 @@ def cmd_build_package_manifest(args: argparse.Namespace) -> int:
 
 def cmd_doctor(args: argparse.Namespace) -> int:
     plugin_root = safe_resolve(args.plugin_root or SCRIPT_ROOT.parent)
-    marketplace_root = safe_resolve(args.marketplace_root or plugin_root.parents[1])
-    errors = validate_plugin(plugin_root) + validate_marketplace(marketplace_root) + validate_package_manifest(plugin_root) + validate_distribution(plugin_root, marketplace_root)
-    emit({"ok": not errors, "pluginRoot": plugin_root.as_posix(), "marketplaceRoot": marketplace_root.as_posix(), "errors": errors})
-    return 0 if not errors else 1
+    marketplace_root = safe_resolve(args.marketplace_root) if args.marketplace_root else None
+    result = run_doctor(
+        plugin_root,
+        marketplace_root,
+        include_distribution=bool(args.distribution),
+        codex_home=safe_resolve(args.codex_home) if args.codex_home else None,
+    )
+    emit(result)
+    return 0 if result["ok"] else 1
+
+
+def cmd_resume(args: argparse.Namespace) -> int:
+    result = resume_run(resolve_run(args))
+    emit(result)
+    return 0
+
+
+def cmd_installation_status(args: argparse.Namespace) -> int:
+    home = safe_resolve(args.codex_home) if args.codex_home else None
+    result = resolve_active_installation(args.plugin_name, home, args.version)
+    emit({"ok": result.get("active") is not None, **result})
+    return 0 if result.get("active") is not None else 1
+
+
+def cmd_build_package(args: argparse.Namespace) -> int:
+    plugin_root = safe_resolve(args.plugin_root or SCRIPT_ROOT.parent)
+    marketplace_root = plugin_root.parents[1]
+    ledger = version_ledger(marketplace_root)
+    if not ledger["consistent"]:
+        emit({"ok": False, "error": "version ledger is inconsistent", "versionLedger": ledger})
+        return 1
+    build_package_manifest(plugin_root)
+    output = safe_resolve(args.output or marketplace_root / "dist" / f"kh-aw-{ledger['version']}.zip")
+    first = build_deterministic_zip(plugin_root, output)
+    check = build_deterministic_zip(plugin_root, output.with_suffix(".verify.zip"))
+    reproducible = first["sha256"] == check["sha256"]
+    if check["path"] != first["path"]:
+        Path(check["path"]).unlink(missing_ok=True)
+    emit({"ok": reproducible, "package": first, "reproducible": reproducible, "versionLedger": ledger})
+    return 0 if reproducible else 1
+
+
+def cmd_build_release_manifest(args: argparse.Namespace) -> int:
+    root = safe_resolve(args.marketplace_root or SCRIPT_ROOT.parents[1])
+    manifest = build_release_manifest(root)
+    write_json(root / "RELEASE_MANIFEST.json", manifest)
+    emit({"ok": True, "path": (root / "RELEASE_MANIFEST.json").as_posix(), "manifest": manifest})
+    return 0
+
+
+def cmd_e2e(args: argparse.Namespace) -> int:
+    result = run_local_e2e(safe_resolve(args.plugin_root or SCRIPT_ROOT.parent))
+    emit(result)
+    return 0 if result["pass"] else 1
+
+
+def cmd_project_doctor(args: argparse.Namespace) -> int:
+    result = run_project_doctor(resolve_run(args))
+    emit(result)
+    return 0 if result["ok"] else 1
+
+
+def cmd_verify_run(args: argparse.Namespace) -> int:
+    result = verify_run(resolve_run(args))
+    emit(result)
+    return 0 if result["pass"] else 1
 
 
 def parser() -> argparse.ArgumentParser:
@@ -1130,7 +1204,7 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--analysis-folder")
     init.add_argument("--output-root")
     init.add_argument("--instructions-file", required=True)
-    init.add_argument("--target", choices=["web-responsive", "app-mobile-webview", "android-native", "ios-native", "cross-platform", "unknown-needs-confirmation"], default="unknown-needs-confirmation")
+    init.add_argument("--target", choices=["web-responsive", "app-mobile-webview", "android-native", "ios-native", "cross-platform", "codex-plugin", "unknown-needs-confirmation"], default="unknown-needs-confirmation")
     init.add_argument("--target-auto", action="store_true", help="Infer and lock the target pipeline from instructions and project files")
     init.add_argument("--name")
     init.set_defaults(func=cmd_init)
@@ -1160,7 +1234,11 @@ def parser() -> argparse.ArgumentParser:
     record_agent.add_argument("--task-id")
     record_agent.add_argument("--session-id", required=True)
     record_agent.add_argument("--invocation", required=True)
-    record_agent.add_argument("--delegation-mode", choices=["native-agents"], default="native-agents")
+    record_agent.add_argument(
+        "--delegation-mode",
+        choices=["native-agents", "codex-subagent", "independent-task"],
+        default="codex-subagent",
+    )
     record_agent.add_argument("--invocation-receipt-file", required=True)
     record_agent.add_argument("--session-evidence-file", required=True)
     record_agent.add_argument("--evidence-file", required=True)
@@ -1261,7 +1339,38 @@ def parser() -> argparse.ArgumentParser:
     doctor = sub.add_parser("doctor", help="Validate plugin and marketplace package")
     doctor.add_argument("--plugin-root")
     doctor.add_argument("--marketplace-root")
+    doctor.add_argument("--distribution", action="store_true")
+    doctor.add_argument("--codex-home")
     doctor.set_defaults(func=cmd_doctor)
+    resume = sub.add_parser("resume", help="Resume the earliest incomplete stage without losing repair history")
+    resume.add_argument("--run-root")
+    resume.add_argument("--project-root", default=".")
+    resume.add_argument("--workspace-root")
+    resume.set_defaults(func=cmd_resume)
+    installation = sub.add_parser("installation-status", help="Inspect Codex cache versions, duplicates, and active resolution")
+    installation.add_argument("--plugin-name", default="kh-aw")
+    installation.add_argument("--version", default="")
+    installation.add_argument("--codex-home")
+    installation.set_defaults(func=cmd_installation_status)
+    package = sub.add_parser("build-package", help="Build and verify a deterministic versioned plugin ZIP")
+    package.add_argument("--plugin-root")
+    package.add_argument("--output")
+    package.set_defaults(func=cmd_build_package)
+    release_manifest = sub.add_parser("build-release-manifest", help="Regenerate the marketplace-wide release ledger")
+    release_manifest.add_argument("--marketplace-root")
+    release_manifest.set_defaults(func=cmd_build_release_manifest)
+    e2e = sub.add_parser("e2e", help="Run cache, CRLF, shadowing, and reproducible package scenarios")
+    e2e.add_argument("--plugin-root")
+    e2e.set_defaults(func=cmd_e2e)
+    for name, func, help_text in [
+        ("project-doctor", cmd_project_doctor, "Validate project state, runtime, graph, and reachability"),
+        ("verify-run", cmd_verify_run, "Independently verify all gates, requirements, and release receipt"),
+    ]:
+        command = sub.add_parser(name, help=help_text)
+        command.add_argument("--run-root")
+        command.add_argument("--project-root", default=".")
+        command.add_argument("--workspace-root")
+        command.set_defaults(func=func)
     return p
 
 

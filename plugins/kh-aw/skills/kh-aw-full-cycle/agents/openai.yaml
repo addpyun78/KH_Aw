@@ -1,6 +1,0 @@
-interface:
-  display_name: "KH_Aw 전체 과정"
-  short_description: "전수조사부터 릴리스까지 실제 증거로 강제"
-  default_prompt: "Use the KH_Aw contracts and executable gates to complete this app or web workflow with physical evidence."
-policy:
-  allow_implicit_invocation: true

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "3.0",
+  "generatedAt": "2026-07-26T07:39:42.702099+00:00",
+  "root": "C:/KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE",
+  "fileCount": 125,
+  "totalBytes": 2614532,
+  "categories": {
+    "core-source": 1,
+    "project-file": 118,
+    "image": 6
+  },
+  "includeAll": false,
+  "inventoryJsonl": "C:/KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE/audit/current/inventory.jsonl",
+  "inventoryCsv": "C:/KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE/audit/current/inventory.csv"
+}

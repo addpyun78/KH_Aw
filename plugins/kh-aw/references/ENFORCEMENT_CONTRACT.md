@@ -188,7 +188,7 @@ Require actual platform build and runtime evidence. Cross-platform projects must
 
 ## 15. Native slash capability enforcement
 
-1. Every stage requires native `/goal` and `/agents` evidence.
+1. Every stage requires physical goal-control and independent-delegation evidence.
 2. Intake additionally requires `/plan`.
 3. Analyze requires `/context` and `/artifact`.
 4. Research requires `/search` and `/artifact`.
@@ -198,8 +198,8 @@ Require actual platform build and runtime evidence. Cross-platform projects must
 8. Test requires `/test`.
 9. Release requires `/artifact` and `/diff`.
 10. Store the actual invocation, physical output, output hash, and Codex session ID.
-11. A required slash capability never passes through fallback or a text claim.
-12. When the Codex surface cannot expose required native evidence, report `blocked` or `failed`, not completion.
+11. A required behavior may use verified physical tool/subagent evidence, but never a text claim.
+12. When neither native nor equivalent physical capability evidence exists, report `blocked` or `failed`, not completion.
 
 ## 16. Tool and runtime evidence
 
@@ -244,7 +244,7 @@ Completion is true only when:
 - copy audit has no forbidden or unexplained copy;
 - research contains valid direct bodies and current official sources where required;
 - design, implementation, screenshots, independent review, and target tests all pass;
-- required native slash and worker session evidence is physical and valid;
+- required capability and worker session evidence is physical and valid;
 - internal evidence is English and actual product UI is Korean;
 - no required item is `failed`, `blocked`, `not_run`, `partial`, or `missing`;
 - no repair ticket remains open; and

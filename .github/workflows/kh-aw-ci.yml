@@ -57,21 +57,21 @@ jobs:
               run=root/'run'; run.mkdir(); instructions='one requirement\ntwo requirement\n'
               create_run_contracts(run,instructions,'web-responsive'); build_inventory(project,run/'inventory')
               inst=run/'contract/user-instructions.txt'; inst.write_text(instructions)
-              state={'schemaVersion':'3.0','engineVersion':'3.2.0','runId':'ci','projectRoot':str(project),'workspaceRoot':str(root/'workspace'),'runRoot':str(run),'analysisMode':'analysis-folder-not-provided','analysisFolder':'','analysisSourceRoot':str(project),'instructionsFile':str(inst),'targetPipeline':'web-responsive','stageStatus':{},'repair':{}}
+              state={'schemaVersion':'3.0','engineVersion':'3.2.1','runId':'ci','projectRoot':str(project),'workspaceRoot':str(root/'workspace'),'runRoot':str(run),'analysisMode':'analysis-folder-not-provided','analysisFolder':'','analysisSourceRoot':str(project),'instructionsFile':str(inst),'targetPipeline':'web-responsive','stageStatus':{},'repair':{}}
               write_run_lock(run,state); write_json(run/'state.json',state)
               plan=ensure_agent_plan(run,state,'intake',force=True); assert plan['selectedSubAgents']==2
               ids=[]
               for i,a in enumerate(plan['assignments']):
                   sid=f'CI-SUB-SESSION-{i:02d}'
                   review=a['reviewTargetWorkerIds']
-                  invocation=f"/agents CI {a['taskId']}"
+                  invocation=f"Codex subagent CI {a['taskId']}"
                   out=run/'orchestration'/'intake'/'outputs'/f'{i}.md'; out.parent.mkdir(parents=True,exist_ok=True)
                   receipt=run/'orchestration'/'intake'/'receipts'/f'{i}.json'; receipt.parent.mkdir(parents=True,exist_ok=True)
                   session=root/'.codex'/'sessions'/'2026'/'07'/'25'/f'rollout-{sid}.jsonl'; session.parent.mkdir(parents=True,exist_ok=True)
                   session.write_text('\n'.join([json.dumps({'type':'session_meta','payload':{'id':sid,'taskId':a['taskId']}}),json.dumps({'type':'response_item','payload':{'sessionId':sid,'taskId':a['taskId'],'text':'physical Codex execution evidence '*8}})])+'\n')
                   out.write_text('\n'.join([a['workerId'],a['taskId'],sid,a['dispatchContractSha256'],a['scopeIds'][0],*review,'physical independent result '*10]))
-                  write_json(receipt,{'schemaVersion':'3.2','stage':'intake','workerId':a['workerId'],'taskId':a['taskId'],'sessionId':sid,'delegationMode':'native-agents','invocation':invocation,'dispatchContractSha256':a['dispatchContractSha256'],'sessionEvidencePath':session.as_posix(),'sessionEvidenceSha256':sha256_file(session),'issuedAt':f'2026-07-24T00:00:{i:02d}Z'})
-                  record_subagent_result(run,stage='intake',worker_id=a['workerId'],task_id=a['taskId'],session_id=sid,invocation=invocation,invocation_receipt_file=receipt,session_evidence_file=session,evidence_file=out,review_of_worker_ids=review)
+                  write_json(receipt,{'schemaVersion':'3.2','stage':'intake','workerId':a['workerId'],'taskId':a['taskId'],'sessionId':sid,'delegationMode':'codex-subagent','invocation':invocation,'dispatchContractSha256':a['dispatchContractSha256'],'sessionEvidencePath':session.as_posix(),'sessionEvidenceSha256':sha256_file(session),'issuedAt':f'2026-07-24T00:00:{i:02d}Z'})
+                  record_subagent_result(run,stage='intake',worker_id=a['workerId'],task_id=a['taskId'],session_id=sid,invocation=invocation,invocation_receipt_file=receipt,session_evidence_file=session,evidence_file=out,review_of_worker_ids=review,delegation_mode='codex-subagent')
                   ids.append(a['workerId'])
               lead_contract_sha=sha256_file(run/'orchestration'/'intake'/'lead-contract.json')
               lead=run/'orchestration'/'intake'/'lead.md'
@@ -94,7 +94,9 @@ jobs:
               assert command_forbidden(command) is None, command
           PY
       - name: Validate committed plugin, marketplace, and package integrity
-        run: python3 plugins/kh-aw/scripts/kh_aw_cli.py doctor --plugin-root plugins/kh-aw --marketplace-root .
+        run: python3 plugins/kh-aw/scripts/kh_aw_cli.py doctor --plugin-root plugins/kh-aw --marketplace-root . --distribution
+      - name: Run cache, CRLF, shadowing, and deterministic package E2E
+        run: python3 plugins/kh-aw/scripts/kh_aw_cli.py e2e --plugin-root plugins/kh-aw
 
   dependency-bootstrap-smoke:
     runs-on: ubuntu-latest

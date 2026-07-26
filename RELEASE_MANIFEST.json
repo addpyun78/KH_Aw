@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "3.2",
-  "generatedAt": "2026-07-25T11:11:36.841924+00:00",
-  "package": "KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE",
-  "fileCount": 90,
-  "totalBytes": 2518751,
+  "schemaVersion": "4.0",
+  "plugin": "kh-aw",
+  "version": "4.0.0",
+  "fileCount": 128,
+  "totalBytes": 2659996,
   "files": [
     {
       "path": ".agents/plugins/marketplace.json",
@@ -11,79 +11,19 @@
       "bytes": 415
     },
     {
+      "path": ".gitattributes",
+      "sha256": "53ab4b66949a6ecb217f56c35297f1f6f32d290cb73522923c545e107cd474f0",
+      "bytes": 158
+    },
+    {
       "path": ".github/workflows/kh-aw-ci.yml",
-      "sha256": "69543d25eefccf7493e62fc28599e69a94147570a4810eb411bde1f8f0b51e97",
-      "bytes": 7297
+      "sha256": "90c73f87ea6224b805f95965be2ae2ed27cd0456e370cb8562e5ee393801d5d8",
+      "bytes": 7513
     },
     {
       "path": ".gitignore",
       "sha256": "6a52eaafa21c833c4d3068e0000dac40e0ad91f0279871477ccfc2bec9f51888",
       "bytes": 197
-    },
-    {
-      "path": "FINAL_BUILD_NOTICE.md",
-      "sha256": "e091e0af85567ca13fa155f43d038e20fb5a2e3a886d76028626c29fc3e3bb33",
-      "bytes": 1416
-    },
-    {
-      "path": "FINAL_REQUIREMENT_AUDIT.json",
-      "sha256": "0f08519200880be99d86254952542b353947429b1f4c773e16a6575d2158958a",
-      "bytes": 7932
-    },
-    {
-      "path": "FINAL_REQUIREMENT_AUDIT.md",
-      "sha256": "383cd450e8580d801ff8df53896e561ae58c04860182dab91c65e5dc18b5c639",
-      "bytes": 2157
-    },
-    {
-      "path": "FINAL_SCORE_REPORT.md",
-      "sha256": "19ec969c8e50017c9627808c5406ee890114a065abaf80347aa8d9c2d2b0704b",
-      "bytes": 1258
-    },
-    {
-      "path": "FINAL_SECURITY_SCAN.json",
-      "sha256": "20b7d8f5b9830fb65f1b9f2f280f82e8a8e6143447bad5369619017f03248601",
-      "bytes": 256
-    },
-    {
-      "path": "FINAL_VALIDATION_REPORT.md",
-      "sha256": "7426a24a9a6d00d8e11776d62edb698164f2935b4ef88f01271a7dbd40e62a2b",
-      "bytes": 1656
-    },
-    {
-      "path": "FULL_STAGE_REPORT.md",
-      "sha256": "1d3354f99e96ad862e4d4bcb1bb352fb421782ffccedd8a63e157f521ed864c6",
-      "bytes": 5260
-    },
-    {
-      "path": "GITHUB_PUBLISH.md",
-      "sha256": "d47dadad6bcdd148bb0aaafe8446ad0d775346aa7fb3094a59f1580941c35503",
-      "bytes": 733
-    },
-    {
-      "path": "INSTALL_CODEX_WEB.md",
-      "sha256": "c135b6eac9ea9214d8f3e1c4cbff2dcbc3425b2fc162360a3aca907b377d2a59",
-      "bytes": 2071
-    },
-    {
-      "path": "NATIVE_AND_TOOL_ENFORCEMENT_REPORT.md",
-      "sha256": "2b375ef5f12c74af69d6751c6b791ba45001abb5b3f21b316b5045c43faccc4e",
-      "bytes": 4562
-    },
-    {
-      "path": "PUBLIC_PLUGIN_DIRECTORY.md",
-      "sha256": "4bfd4ec09ce6e2d2be1979eacc2451fbe7876c8fa95304d0e532fca45e252ad5",
-      "bytes": 1559
-    },
-    {
-      "path": "README.md",
-      "sha256": "599ea0188e45ff954a3b1f65b93f0b4b8cd3dada4e9fae71b5675f5847e42666",
-      "bytes": 4208
-    },
-    {
-      "path": "RELEASE_NOTES.md",
-      "sha256": "ae72135c63c247c7a54ddbc9fc299dfffde21e99489ab3e9cff6c527449d0fac",
-      "bytes": 2081
     },
     {
       "path": "audit/CORE_FILE_BY_FILE_REPORT.md",
@@ -94,6 +34,26 @@
       "path": "audit/CORE_SOURCE_AUDIT.json",
       "sha256": "b8fed4ba297db27495ede54d6826e2d77cec5d95d9cbf176b637deb0ded07879",
       "bytes": 38116
+    },
+    {
+      "path": "audit/current/FULL_PROGRAM_AUDIT.md",
+      "sha256": "c7d0f8f9d164caa4ba8556bf0e3d1ed8fda06c002a8e4b1bd096172909ea84e2",
+      "bytes": 2845
+    },
+    {
+      "path": "audit/current/inventory-summary.json",
+      "sha256": "5c6052e98099b615b267a1b74a787d54709e2008207e8f88b6bf689e2f50d235",
+      "bytes": 479
+    },
+    {
+      "path": "audit/current/inventory.csv",
+      "sha256": "924a09fd57436880a6ca8612002c5383a0223dcaee41343656273799a7d60ef3",
+      "bytes": 24199
+    },
+    {
+      "path": "audit/current/inventory.jsonl",
+      "sha256": "7f818eddf14aa21fde049ed02db7843cd20f28df42a37f5c9426b3aadec13df0",
+      "bytes": 40025
     },
     {
       "path": "audit/FULL_INVENTORY_REPORT.md",
@@ -136,34 +96,84 @@
       "bytes": 2435
     },
     {
+      "path": "COMPLETION_CRITERIA_LEDGER.md",
+      "sha256": "fb5efc72fbe3c2ae09a999ad1311fcb71c427e7abec4338e82e7ede4366a06c2",
+      "bytes": 3574
+    },
+    {
+      "path": "design/NEW_ARCHITECTURE.md",
+      "sha256": "af055788dd990312f66cd94a8c60254d1f823a4aea939cff6b96b31084d434f5",
+      "bytes": 2605
+    },
+    {
+      "path": "docs/BEGINNER_GUIDE_KO.md",
+      "sha256": "6b5bebe26fb087cbcba397d4472d9457e42286539593787301b5f26c93345816",
+      "bytes": 1469
+    },
+    {
+      "path": "docs/INSTALL_UPDATE_REMOVE_KO.md",
+      "sha256": "38f5aa6ae5bf02aa9c21653cba2e1a252f812f0bf7302b8101582fe5b9578820",
+      "bytes": 1223
+    },
+    {
+      "path": "docs/TROUBLESHOOTING_KO.md",
+      "sha256": "0977b9fa7e3c7880631663120ee29d2e410904212cc8d34e930c6e82cce37c06",
+      "bytes": 1367
+    },
+    {
+      "path": "FINAL_BUILD_NOTICE.md",
+      "sha256": "2989802722579e7c5ebfc5dbbbd51d4cc7b3285daf2985b1d4f2d4c68c960ba8",
+      "bytes": 786
+    },
+    {
+      "path": "FINAL_REQUIREMENT_AUDIT.json",
+      "sha256": "1b0cb1018bb32efed6e7b1e8ae5f72b66c9efb184ebb162fb46656633b913333",
+      "bytes": 494
+    },
+    {
+      "path": "FINAL_REQUIREMENT_AUDIT.md",
+      "sha256": "1c54d2a070b17adc443ae7f575896e6d7526a4801cf4fe65b43ca55251d8e2ef",
+      "bytes": 904
+    },
+    {
+      "path": "FINAL_SCORE_REPORT.md",
+      "sha256": "2270dfc0f3324189d97c71884afcccdf13e4f7d413280acdad4293b7a18144f6",
+      "bytes": 553
+    },
+    {
+      "path": "FINAL_SECURITY_SCAN.json",
+      "sha256": "7c8362ee3ab76b13d0171eb44fd7c8ef0c0fc8f2a1f6b681eb92a2370a028260",
+      "bytes": 250
+    },
+    {
+      "path": "FINAL_VALIDATION_REPORT.md",
+      "sha256": "3df3f8d638041852afbe3cb830ef027a66583f9f215abf86984439efbc0226cc",
+      "bytes": 945
+    },
+    {
+      "path": "FULL_STAGE_REPORT.md",
+      "sha256": "1d3354f99e96ad862e4d4bcb1bb352fb421782ffccedd8a63e157f521ed864c6",
+      "bytes": 5260
+    },
+    {
+      "path": "GITHUB_PUBLISH.md",
+      "sha256": "9e3c35dd3af9e8722f9cd8d9171f32de9df83d9de5ede0037dcf5f5b399b4d30",
+      "bytes": 996
+    },
+    {
+      "path": "INSTALL_CODEX_WEB.md",
+      "sha256": "c135b6eac9ea9214d8f3e1c4cbff2dcbc3425b2fc162360a3aca907b377d2a59",
+      "bytes": 2071
+    },
+    {
+      "path": "NATIVE_AND_TOOL_ENFORCEMENT_REPORT.md",
+      "sha256": "aa10d1bc8903200533d608b77e56d55c7f05bd0ed7b9bf56383a24f12e56272b",
+      "bytes": 1379
+    },
+    {
       "path": "plugins/kh-aw/.codex-plugin/plugin.json",
-      "sha256": "b72c24fb2ea7a04194b6b13def28ebd11ef78921e8b4cbc2dc83f0f682b4583c",
-      "bytes": 3240
-    },
-    {
-      "path": "plugins/kh-aw/LICENSE",
-      "sha256": "4a62358edee56daf26a6dbdd7d9a66f578866994502eacb038b381d30778f3d4",
-      "bytes": 1066
-    },
-    {
-      "path": "plugins/kh-aw/PACKAGE_MANIFEST.json",
-      "sha256": "766ec634c92d7f258a32db0fadbd56e3265cbc5bbf0bcf96ed15ced55d205554",
-      "bytes": 10480
-    },
-    {
-      "path": "plugins/kh-aw/PRIVACY.md",
-      "sha256": "14861d05fc2b319fb4caa01c3933b02a7aeec67038a78c1064ca81c92e4e3ea8",
-      "bytes": 1124
-    },
-    {
-      "path": "plugins/kh-aw/README.md",
-      "sha256": "32cc77cba597250945b722c2a35576e8beac77253f00216aa801928f5caee908",
-      "bytes": 2907
-    },
-    {
-      "path": "plugins/kh-aw/TERMS.md",
-      "sha256": "edfa16eca85d243dfd295d83ac15d72f0240b352ff2adc1f17178b3262827ae5",
-      "bytes": 831
+      "sha256": "5de15196c3bee025a1fe15a3ebaebfc80c11218fbb8e82207e76e920dd729501",
+      "bytes": 2399
     },
     {
       "path": "plugins/kh-aw/assets/icon.png",
@@ -196,9 +206,29 @@
       "bytes": 67020
     },
     {
+      "path": "plugins/kh-aw/LICENSE",
+      "sha256": "4a62358edee56daf26a6dbdd7d9a66f578866994502eacb038b381d30778f3d4",
+      "bytes": 1066
+    },
+    {
       "path": "plugins/kh-aw/package.json",
-      "sha256": "b3253cb1c42f71441de695939fa4cb26cc70e5cc6e6a450b7eb00e88a79b0bf6",
+      "sha256": "dc0e5d8efc6dc9a9c048471b186940189b6b4f194e946d89726f65838c49183a",
       "bytes": 1023
+    },
+    {
+      "path": "plugins/kh-aw/PACKAGE_MANIFEST.json",
+      "sha256": "6a05164a18764b2166a90d3a55d79b9fd4cf229e7f165d840d6b5df092200481",
+      "bytes": 19554
+    },
+    {
+      "path": "plugins/kh-aw/PRIVACY.md",
+      "sha256": "14861d05fc2b319fb4caa01c3933b02a7aeec67038a78c1064ca81c92e4e3ea8",
+      "bytes": 1124
+    },
+    {
+      "path": "plugins/kh-aw/README.md",
+      "sha256": "f941c340875023684c77cea5046ba75c070ea894be1b2e72159c5b9e6b7a23fa",
+      "bytes": 1659
     },
     {
       "path": "plugins/kh-aw/references/ARTIFACT_CONTRACTS.md",
@@ -212,23 +242,53 @@
     },
     {
       "path": "plugins/kh-aw/references/ENFORCEMENT_CONTRACT.md",
-      "sha256": "fbd4db27092328234c4aff28bccea7ad85916ff67a47d2721d5d681e46ba91e0",
-      "bytes": 14441
+      "sha256": "1ce9406717f9e8596abe74344366e697b1e66628232c28f6387b8f113d8b1637",
+      "bytes": 14487
     },
     {
       "path": "plugins/kh-aw/references/RUNBOOK.md",
-      "sha256": "a74ffcd5531c409e0790af7c736cff976851c928699f63dfac48ad50f04b0236",
-      "bytes": 4540
+      "sha256": "1fd05eb383a513281139e69f86e5c06c21d8d16c094f90e579d2f7e4f788ceee",
+      "bytes": 4441
+    },
+    {
+      "path": "plugins/kh-aw/references/workflows/audit-upgrade.md",
+      "sha256": "d7c1a6255672ef6fd031a072dbd2b9e9889bc5455ccf75b755060c5a17e62b3a",
+      "bytes": 1904
+    },
+    {
+      "path": "plugins/kh-aw/references/workflows/full-cycle.md",
+      "sha256": "637a44acfa85fc8ed226ba57b7c7c16604ef4c41518fa363fc3f5e43dd5e00da",
+      "bytes": 5215
+    },
+    {
+      "path": "plugins/kh-aw/references/workflows/implementation-repair.md",
+      "sha256": "29f41a3186ca00be0caa4e5b0af3490f0bfb7be7b5eed17fad33e590d7630f8d",
+      "bytes": 2074
+    },
+    {
+      "path": "plugins/kh-aw/references/workflows/multi-agent-orchestration.md",
+      "sha256": "35b446765c5c12d283c42021dd52154b489a607e9ffc1290af9f9ad0c39ffcc6",
+      "bytes": 6198
+    },
+    {
+      "path": "plugins/kh-aw/references/workflows/release-company.md",
+      "sha256": "8915b921fe2a22a6dfe8fe594efacc0043d132aec1f97512876f8e4170a51384",
+      "bytes": 2645
+    },
+    {
+      "path": "plugins/kh-aw/references/workflows/research-design.md",
+      "sha256": "bbfe1eff8fd4fc55cc054f62d8efa4ed0dab9ed747f0eae43e62e1a6025c15bc",
+      "bytes": 2433
     },
     {
       "path": "plugins/kh-aw/schemas/native-capability-policy.schema.json",
-      "sha256": "cb6d5f79bd5c985be06910d6654b66ec9fe7a6947ad99879775f0ecec160ceef",
-      "bytes": 2641
+      "sha256": "60eacc5da305fa44c8576b287c51cd2972dcd3efae94ad69ea57409058225c7b",
+      "bytes": 2656
     },
     {
       "path": "plugins/kh-aw/schemas/physical-evidence.schema.json",
-      "sha256": "17473b66bca123bc8d1bbad72fb793cbaea34bc833cf4a0d3e35eeca3cdcaa20",
-      "bytes": 1102
+      "sha256": "1c7e9cac9858a9f3a1142da677a741480705f22e724df902764662a87e698adc",
+      "bytes": 1154
     },
     {
       "path": "plugins/kh-aw/schemas/run-lock.schema.json",
@@ -237,13 +297,13 @@
     },
     {
       "path": "plugins/kh-aw/schemas/subagent-orchestration.schema.json",
-      "sha256": "10519a8d4163387ba7ce3f8e3e86d9163f6c9e263006b00d26a56a509914cb44",
-      "bytes": 3570
+      "sha256": "bef7d1d2fb24660656e31f24d65d36098818684fe8a30385ece88b061ce53277",
+      "bytes": 3597
     },
     {
       "path": "plugins/kh-aw/schemas/test-report.schema.json",
-      "sha256": "a9cd90547ac0d3b9a0730a174858637015d571fe60c566be668b114334bafcfd",
-      "bytes": 1299
+      "sha256": "916a844f21d058d7adbb4f2f144af2ac7e90aea53bcda5c9f52d4731e2cf68a5",
+      "bytes": 1344
     },
     {
       "path": "plugins/kh-aw/schemas/tool-policy.schema.json",
@@ -262,18 +322,23 @@
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/__init__.py",
-      "sha256": "73d621915078b2be738e2a5aff5d6386e7139c9571b10e8fd4032edd63cebf70",
+      "sha256": "e1bc6a59e1db0e21be28ac2c10f6fe2cfa127926c21102636f463e73268d5eef",
       "bytes": 66
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/capabilities.py",
-      "sha256": "e4efea230d5a7ebb8b112ae17a0a8e153cd87ed7314517c90e9d17f77aa7d950",
-      "bytes": 10410
+      "sha256": "8c9c9e6377e74169b0466dacd8a57c4d0e8b8fe92c2c35077cd029154f5adaee",
+      "bytes": 10218
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/claim_verifier.py",
+      "sha256": "8668bc3638bbdfb8b5d3fb2b1e97366fee69a3514f45d18e4cd4537998aa4e9d",
+      "bytes": 1165
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/contracts.py",
-      "sha256": "8d32c67f32d270719d22f06100974a0df8dc72c7fab221779f46b1a5b931effa",
-      "bytes": 13943
+      "sha256": "3deb82b1e76d8f2fcc1db71eb46698fd9cbc8bfafd55aaa8d66a8ef63dd923a2",
+      "bytes": 13294
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/copy_audit.py",
@@ -282,8 +347,18 @@
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/distribution.py",
-      "sha256": "57d31183d2280a8b4f42e2269172ceba81f25dd83f1eb094570b06584216b23f",
-      "bytes": 10835
+      "sha256": "0f2af74dea26ca9ad89e526bb384ad3aab642176e551a3113d815b9167fa0a95",
+      "bytes": 11453
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/doctor.py",
+      "sha256": "088728ca7451dde6ffad0b1f8895908b90f37123bd16c8c07b0b98afac55ecbd",
+      "bytes": 5415
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/e2e.py",
+      "sha256": "befe4cb0ea622abf991947806a81b94439d5d471d8986a84c0d14f6a0ed750bc",
+      "bytes": 2791
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/evidence.py",
@@ -292,13 +367,18 @@
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/gates.py",
-      "sha256": "254b17b0424c3315e991704187f3370972f8f9855749099ffa1258a78dabf646",
-      "bytes": 94555
+      "sha256": "f8abfd61bdb980e7c3cdfb2309975ccc5fe67190a7665efbc2638c58648934bf",
+      "bytes": 94318
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/installation.py",
+      "sha256": "9ac3a1ee704543feac39794733a93d6991a1e1b3f1c10f0de2067970d841a3c6",
+      "bytes": 4416
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/integrity.py",
-      "sha256": "c04df9948af4cb0924d254f174231b534a765c00664abab5cfe2bd792dd50fce",
-      "bytes": 2483
+      "sha256": "80c596e6b005c5fc87ef71a4ceb2b90fa4087bef16be500e63e29bcc9fae41a8",
+      "bytes": 3853
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/inventory.py",
@@ -307,13 +387,18 @@
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/language_policy.py",
-      "sha256": "c8c2a80b01d08d82dfa62a7d94288c7a5b946e66ba58afe896b68a911487da95",
-      "bytes": 4236
+      "sha256": "1f80369119d152007d01b414323bdcd173f47850bb140ca65febf9d265e6dc6d",
+      "bytes": 4369
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/orchestration.py",
-      "sha256": "dde76773d221cff69a9552911a65a09103bee2d21f94ecf5e1fee22ff5ced2a6",
-      "bytes": 47484
+      "sha256": "2092e1c3eaa5ec257448a64f5748e7135cbd9ac298d6f484a30812fe94201c11",
+      "bytes": 47612
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/packaging.py",
+      "sha256": "87d09722a085ebf07b0123870114085e2a3d65b2f2dacf7c483e6f1ad423a963",
+      "bytes": 2365
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/page_inventory.py",
@@ -322,8 +407,8 @@
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/plugin_validate.py",
-      "sha256": "18fe6afe678d84907f3defd41538352bb4609f95d11ed3ed134f454f9f288c7b",
-      "bytes": 9854
+      "sha256": "588dfa86a6f0fa463c0ecccd34678b66002e8ceeecdd21236e354b20e0046024",
+      "bytes": 10288
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/protection.py",
@@ -331,14 +416,29 @@
       "bytes": 3969
     },
     {
+      "path": "plugins/kh-aw/scripts/kh_aw/reachability.py",
+      "sha256": "e0b39c7d20925e9eedce2947f094e3c68176db21f2620852547eeba3d448cdc5",
+      "bytes": 2006
+    },
+    {
       "path": "plugins/kh-aw/scripts/kh_aw/repair.py",
-      "sha256": "69754da9be78034eb6fdf60e3714228d1d89b8fdaab5eb535bb2320a43c947ee",
-      "bytes": 13471
+      "sha256": "394f784cd93c6ef368823fd35a7f8f86c52e5c5b5f3882c5fa8d05c5c046b12b",
+      "bytes": 15395
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/requirement_compiler.py",
+      "sha256": "6a01882be5c32886cea9bfe13b83bf4821b0d2027c35dc71c503223313592eb3",
+      "bytes": 2501
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/run_lock.py",
-      "sha256": "e43817a311ae98cb3130ef9f0e8e37a3b6fdc04edd54d6bb509aee3245f574ee",
-      "bytes": 4383
+      "sha256": "501fc89c6e775ac3bedc539a0c5cf4182489cb43bdafad2a8750d33727022517",
+      "bytes": 4390
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/runtime.py",
+      "sha256": "b0158c453df63b3a80a087d56ac93b905fedee64f7bcd7dc722113897309fa79",
+      "bytes": 2068
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/security.py",
@@ -347,28 +447,43 @@
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/session_forensics.py",
-      "sha256": "f3c0828a5e7869c394e0925a1ee47e1e16047c4cecabcceb955fa3972fcc8a60",
-      "bytes": 4620
+      "sha256": "45dbdc35899f22acc294357d06ae81662f32ca2d8fb140187f4fc3510eccdcf3",
+      "bytes": 5384
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/targeting.py",
-      "sha256": "edcb13e5bd75c85b0004a8b6347c133e3eba48b52f812e1e488a4410086c5bab",
-      "bytes": 4037
+      "sha256": "de02820b259378c08d4a6bae16b798e01d1681081c48686b92febf576cf791a7",
+      "bytes": 4641
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/task_graph.py",
+      "sha256": "3384259c3390606528e6677ccf2cfb012f67b2fb0a83562b9f12d82c3d020407",
+      "bytes": 1996
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/tooling.py",
-      "sha256": "f62f064c67b54a2110d5cbc1a93cce7bb24fd3a031f5ae565e35619330e7ac7c",
-      "bytes": 29457
+      "sha256": "378dfd2691f1b607a52aacd516d26b146a2bd98e1dd85a75c7c21da8a90b87e4",
+      "bytes": 30620
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw/util.py",
-      "sha256": "b1bab08341e188f8719a917036e18ee113041a40815733a64a7eba1b966c4216",
-      "bytes": 6472
+      "sha256": "99d85ba5e4bd3f9796fcfb2ed48f6b762cebeca71427ac030c6a8f04294a4227",
+      "bytes": 6708
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/verifier.py",
+      "sha256": "b4d34dd3b6df865f3adafb846fa6bd01683ecb36da2387bc50076049bd37b495",
+      "bytes": 1612
+    },
+    {
+      "path": "plugins/kh-aw/scripts/kh_aw/versioning.py",
+      "sha256": "112e08e7b8c7369a2c5e38789a87067fa39720fcff716cf15f0470b9d32c496f",
+      "bytes": 1324
     },
     {
       "path": "plugins/kh-aw/scripts/kh_aw_cli.py",
-      "sha256": "318bf77c83bf5715eded917efa6d208f874530f3bc17d6eaff76e69fb272702a",
-      "bytes": 66590
+      "sha256": "3f015c8a04b3b463ece6f2fba1a8c9c0d8a12afc53e18b0d941766aa1c72ffb6",
+      "bytes": 71554
     },
     {
       "path": "plugins/kh-aw/scripts/lighthouse_check.mjs",
@@ -391,69 +506,144 @@
       "bytes": 8728
     },
     {
-      "path": "plugins/kh-aw/skills/kh-aw-audit-upgrade/SKILL.md",
-      "sha256": "d7c1a6255672ef6fd031a072dbd2b9e9889bc5455ccf75b755060c5a17e62b3a",
-      "bytes": 1904
+      "path": "plugins/kh-aw/skills/kh-aw/SKILL.md",
+      "sha256": "12d09d0acfb4a925cb5e13dd567f577f6b856b217fa077cddef4a56bfa4df9ff",
+      "bytes": 1425
     },
     {
-      "path": "plugins/kh-aw/skills/kh-aw-audit-upgrade/agents/openai.yaml",
-      "sha256": "7c14c67a14843d918f330e8c9a2036b517c92b426a2a11936baca33d20ba07ee",
-      "bytes": 309
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-full-cycle/SKILL.md",
-      "sha256": "ba4af7625eda60c87ae167c69a869342a8a062cb7d8c74d12aa44bc8770dd953",
-      "bytes": 5237
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-full-cycle/agents/openai.yaml",
-      "sha256": "f7253eecaf6e9fa7e8c88397b6b3450bfcd50b0a704811a6b677644b3efe2254",
-      "bytes": 299
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-implementation-repair/SKILL.md",
-      "sha256": "42b7c4a12da71c86f5e18ae8f46aaffdc194d116431856f64c37e63a827cbd7b",
-      "bytes": 2050
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-implementation-repair/agents/openai.yaml",
-      "sha256": "6adb48fb3fcb616f932ed56ba6b49981eaa29bed6b5f67cf2a595d667538f1f7",
-      "bytes": 316
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-multi-agent-orchestration/SKILL.md",
-      "sha256": "1438e20a8c35810c5007ed3b775bcbfd4eb6a1167fc2b7e79d615379b5e2a787",
-      "bytes": 6161
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-multi-agent-orchestration/agents/openai.yaml",
-      "sha256": "ff4b936a7c1c413b554fe2f1a472af83b1b3170640465a2fc0bdfe73cf6420ef",
-      "bytes": 387
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-release-company/SKILL.md",
-      "sha256": "4d023f7644fa10c7ca02deeaf6b7aafc4ce91c7d9add9d14f83d84b4c76de6f3",
-      "bytes": 2698
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-release-company/agents/openai.yaml",
-      "sha256": "b977c953783602e22b95b8b722fb2d1f6165def397fe649821a6c1d0bec768fc",
-      "bytes": 336
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-research-design/SKILL.md",
-      "sha256": "254ddfecf2aac6b8100e6f30bfeaf75ccf7061d8b59c08300621dcb88f3dd4f5",
-      "bytes": 2497
-    },
-    {
-      "path": "plugins/kh-aw/skills/kh-aw-research-design/agents/openai.yaml",
-      "sha256": "22e67d0e1d0a7bc1d686d563c7894e27517453035ad9d5e5aeaec5600ce4b04d",
-      "bytes": 340
+      "path": "plugins/kh-aw/TERMS.md",
+      "sha256": "edfa16eca85d243dfd295d83ac15d72f0240b352ff2adc1f17178b3262827ae5",
+      "bytes": 831
     },
     {
       "path": "plugins/kh-aw/tests/test_kh_aw.py",
-      "sha256": "b43c03fe5ae39b7a66b6fa13c6d36bea531834a597255abaac9d26edbec8d2e8",
-      "bytes": 46076
+      "sha256": "506057ce19998a8885151dc6e2a7fceab07b263a1d218175c5799e66ab36557f",
+      "bytes": 49949
+    },
+    {
+      "path": "PUBLIC_PLUGIN_DIRECTORY.md",
+      "sha256": "4bfd4ec09ce6e2d2be1979eacc2451fbe7876c8fa95304d0e532fca45e252ad5",
+      "bytes": 1559
+    },
+    {
+      "path": "README.md",
+      "sha256": "bcf221f9e082ceabcea9f860e7deedd30fe0379d697ddb8002b23d3a0ce172e5",
+      "bytes": 1930
+    },
+    {
+      "path": "RELEASE_NOTES.md",
+      "sha256": "0be48913eb46917bbef6ea3efff3ede70ef229d08bf3a43c217ae088ee91037c",
+      "bytes": 1272
+    },
+    {
+      "path": "reproduction/CACHE_SHADOWING_REPORT.md",
+      "sha256": "4143f6f195105e84226f9ca9beaae16dfc14ae13c319b422006df2aed3750ce7",
+      "bytes": 1133
+    },
+    {
+      "path": "reproduction/DOCTOR_RUNS.jsonl",
+      "sha256": "0ddf253940082762dbe373c18709ee0af0d535703166c245b1dd1dbaa1e5e041",
+      "bytes": 1888
+    },
+    {
+      "path": "reproduction/INSTALLATION_SNAPSHOTS.jsonl",
+      "sha256": "fa56df7cca6b1b6ac1293d226ef5f5ebe2932746313556dc6ac511c3b37b5914",
+      "bytes": 761
+    },
+    {
+      "path": "reproduction/MANUAL_BYPASS_REPRODUCTION.md",
+      "sha256": "93a64b3dd77b83695a4daae1b7ce366671e28ec82dd9a7fa8a7574d7647ecfe2",
+      "bytes": 1429
+    },
+    {
+      "path": "reproduction/REPRODUCTION_MATRIX.md",
+      "sha256": "dcd33d70e33d40039fde6a7bb6c4dad5da1ca93b4bdd8781fc76a49fce017743",
+      "bytes": 1641
+    },
+    {
+      "path": "reproduction/ROOT_CAUSE_EVIDENCE.md",
+      "sha256": "a19f247ed9fb24452d7e93c3e8dbf3a28b2732f48cb1feaba1d3b8efaf8e93dd",
+      "bytes": 1817
+    },
+    {
+      "path": "reproduction/ROOT_RESOLUTION_LOGS.jsonl",
+      "sha256": "1baa14cc76bb59c604410ed490a9c2f2dae8d065170286d8d3dc03cd54f60791",
+      "bytes": 1024
+    },
+    {
+      "path": "reproduction/SKILL_VISIBILITY_REPORT.md",
+      "sha256": "38538e19d42c3fff916a113dbe49a035d7c2d8f8fd39df4709ddecc59c013b8a",
+      "bytes": 989
+    },
+    {
+      "path": "research/INSTALL_CACHE_SHADOWING_COMPARISON.md",
+      "sha256": "d0b11ba2e25967fd9f9ed692b8788600189d2e937f299d5ce9b6a9a40e3761ae",
+      "bytes": 962
+    },
+    {
+      "path": "research/KH_AW_STRUCTURAL_DIFFERENCE_REPORT.md",
+      "sha256": "fa86610d1186ad020f0e8ed6785287316b083db835a70caf081de541c4ae18a1",
+      "bytes": 1304
+    },
+    {
+      "path": "research/OFFICIAL_CODEX_PLUGIN_MODEL.md",
+      "sha256": "01f559e3b6c85d8b8a128ede159b5b64f6d494b35ca381bc62678a9cef6ab872",
+      "bytes": 1965
+    },
+    {
+      "path": "research/PLATFORM_CAPABILITY_MATRIX.json",
+      "sha256": "8ee7e624bf2d00a6a70abd94eca87c5697f89fc78b2d7cfe48ed39b4701d87c7",
+      "bytes": 1293
+    },
+    {
+      "path": "research/PLUGIN_STRUCTURE_COMPARISON.csv",
+      "sha256": "224326da0db8cf392fd3704dc64ff9479bcfa076eb43dee4c00c7ed353abb205",
+      "bytes": 1333
+    },
+    {
+      "path": "research/PUBLIC_PLUGIN_FAILURE_PATTERNS.md",
+      "sha256": "d5e1e51719c3d549ba0bc07d6466be48e9a95fffa4491c2b3ffe6ee16f10cdb1",
+      "bytes": 573
+    },
+    {
+      "path": "research/PUBLIC_PLUGIN_FILE_INVENTORY.jsonl",
+      "sha256": "c680529dfdc5e7c2d79424eb3958046166932074da3b94997d16e0c39641c090",
+      "bytes": 2034
+    },
+    {
+      "path": "research/PUBLIC_PLUGIN_REPOSITORY_LIST.json",
+      "sha256": "2bc7a999f1ec5dabc8bf52fde92ddb718158c6e1b9a21d8b30ebd8e1e0889d86",
+      "bytes": 2837
+    },
+    {
+      "path": "research/PUBLIC_PLUGIN_SUCCESS_PATTERNS.md",
+      "sha256": "92e2ad6ba37794d0c4adcf8ef1dee8b8fc22d8e6ca65d01d5374001ce0aefd5f",
+      "bytes": 536
+    },
+    {
+      "path": "research/SCRIPT_HOOK_MCP_AGENTS_CI_COMPARISON.md",
+      "sha256": "ef67ab1c5088378f87bf8c951d87f770d7c6c33e9ac2b71a5b43db0c0109d5ea",
+      "bytes": 1389
+    },
+    {
+      "path": "research/SKILL_ENTRYPOINT_COMPARISON.md",
+      "sha256": "1d9cf4cc93921fdbc2f007c1b94bd5000bd51962e0ffbb6d1226bb82a07d7cdd",
+      "bytes": 1084
+    },
+    {
+      "path": "research/SOURCE_CITATION_LEDGER.jsonl",
+      "sha256": "5419ad6278f47ae847f3fe42d4574bc8ceaf0bfeddda3304e685481110aa251e",
+      "bytes": 2616
+    },
+    {
+      "path": "TEST_EVIDENCE.md",
+      "sha256": "77244ac679cdc59e0611c15d577dd622f3b7faddb6056a70720f12a03ff7b32c",
+      "bytes": 1587
+    },
+    {
+      "path": "VERSION_LEDGER.json",
+      "sha256": "6234c055123605f8f877e8235876c33cbddc2642e239d04a1293e4a18d6cab40",
+      "bytes": 410
     }
   ]
 }

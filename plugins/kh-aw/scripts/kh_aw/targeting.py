@@ -10,6 +10,7 @@ TARGET_PIPELINES = {
     "android-native",
     "ios-native",
     "cross-platform",
+    "codex-plugin",
     "unknown-needs-confirmation",
 }
 
@@ -23,6 +24,10 @@ WEBVIEW_HINTS = (
 )
 ANDROID_HINTS = ("android app", "android native", "kotlin", "gradle")
 IOS_HINTS = ("ios app", "swiftui", "xcode")
+PLUGIN_HINTS = (
+    "codex plugin", "plugin.json", ".codex-plugin", "marketplace plugin",
+    "skill.md", "codex marketplace", "kh_aw", "kh-aw",
+)
 
 # Korean user instructions are input data. Unicode escapes keep the internal source ASCII.
 KOREAN_WEB_HINTS = (
@@ -54,6 +59,7 @@ def infer_target_pipeline(instructions: str, project_root: Path | None = None) -
         or any(hint.replace(" ", "") in compact for hint in KOREAN_ANDROID_HINTS)
     )
     ios = any(hint in text for hint in IOS_HINTS) or "ios" in text
+    plugin = any(hint in text for hint in PLUGIN_HINTS)
 
     if project_root:
         root = project_root.resolve()
@@ -80,7 +86,13 @@ def infer_target_pipeline(instructions: str, project_root: Path | None = None) -
         if any(root.rglob("*.xcodeproj")) or any(root.rglob("*.xcworkspace")):
             ios = True
             signals.append("iOS project files detected")
+        if (root / ".codex-plugin" / "plugin.json").is_file() or any(root.rglob(".codex-plugin/plugin.json")):
+            plugin = True
+            signals.append("Codex plugin manifest detected")
 
+    if plugin:
+        signals.append("Codex plugin or marketplace instruction detected")
+        return {"targetPipeline": "codex-plugin", "confidence": "high", "signals": signals}
     if webview:
         signals.append("HTML mobile app or Android WebView instruction detected")
         return {"targetPipeline": "app-mobile-webview", "confidence": "high", "signals": signals}

@@ -1,6 +1,0 @@
-interface:
-  display_name: "KH_Aw 구현 수리"
-  short_description: "실제 구현 증거를 확인하고 원인 단계부터 수리"
-  default_prompt: "Use the KH_Aw repair loop and executable gates until the implementation has genuine file, runtime, and test evidence."
-policy:
-  allow_implicit_invocation: true

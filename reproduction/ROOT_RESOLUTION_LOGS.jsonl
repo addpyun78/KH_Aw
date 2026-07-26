@@ -1,0 +1,5 @@
+{"case":"source-checkout","input":"C:/KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE/plugins/kh-aw","leaf":"kh-aw","parent":"plugins","manifestName":"kh-aw","manifestVersion":"4.0.0","accepted":true,"rule":"leaf equals plugin name"}
+{"case":"versioned-cache","input":"C:/Users/pyun7/.codex/plugins/cache/kh-aw-marketplace/kh-aw/3.2.1","leaf":"3.2.1","parent":"kh-aw","manifestName":"kh-aw","manifestVersion":"3.2.1","accepted":true,"rule":"parent equals plugin name and leaf equals manifest version"}
+{"case":"wrong-folder","input":"<temp>/other/4.0.0","leaf":"4.0.0","parent":"other","manifestName":"kh-aw","manifestVersion":"4.0.0","accepted":false,"rule":"neither source nor version-cache shape"}
+{"case":"plugin-only","pluginRoot":"<cache>/kh-aw/4.0.0","marketplaceRoot":"","mode":"plugin","accepted":true,"rule":"marketplace checks are optional"}
+{"case":"distribution","pluginRoot":"<repo>/plugins/kh-aw","marketplaceRoot":"<repo>","mode":"distribution","accepted":true,"rule":"explicit marketplace and distribution checks"}

@@ -1,24 +1,19 @@
-# KH_Aw 3.2.0 배포 준비 안내
+# KH_Aw 4.0.0 Build Notice
 
-이 폴더는 GitHub 게시와 Codex 마켓플레이스 재설치를 위한 시스템 원본입니다.
+This source tree contains the redesigned engine, research, reproduction, architecture,
+tests, packaging pipeline, and beginner documents. Local source doctor, distribution
+doctor, regression tests, and cache/CRLF/shadowing/package E2E must be rerun after the
+last manifest generation.
 
-현재 포함된 핵심 보호 기능:
+This notice does not assert public publication or active Codex installation. The current
+machine cache still contains the prior six-skill `3.2.1` snapshot. The exact redesigned
+source state must be published and installed through the supported plugin manager, then
+opened in a new Codex session.
 
-- 프로젝트 유형 자동 분류와 실행 잠금
-- 사용자 지시 1:1 추적
-- 분석 폴더 변경 감지
-- 원본 코드와 `legacy` 대량 복사 감지
-- 프로젝트별 동적 페이지 목록 생성
-- 웹검색 본문 추출과 공식문서 최신성 검사
-- 디자인 설계, 실제 구현, 화면 검증의 3단계 강제
-- 이미지, 히어로, 모션, 한국어 화면 검증
-- Android WebView 구조와 APK 내부 파일 검사
-- 웹 빌드 산출물과 실제 브라우저 검증
-- 실제 Codex 세션 JSONL에 연결된 `/goal`, `/agents` 및 단계별 기능 검사
-- 독립 담당자 결과와 교차 검토 검사
-- 실패, 차단, 미실행을 완료로 표시하지 못하게 하는 최종 게이트
-- Codex 내부 자료는 영어, 패널과 실제 앱·웹 사용자 내용은 한국어로 분리
+Authoritative local ledgers:
 
-존재하지 않는 예전 ZIP 파일을 가리키던 해시 문서는 제거했습니다. 현재 배포 파일 목록과 해시는 `RELEASE_MANIFEST.json`, 플러그인 내부 목록은 `plugins/kh-aw/PACKAGE_MANIFEST.json`에 기록되어 있습니다.
-
-새 버전을 설치한 뒤에는 실제 프로젝트마다 브라우저, 에뮬레이터 또는 빌드 산출물 검증을 다시 실행해야 합니다.
+- `VERSION_LEDGER.json`
+- `plugins/kh-aw/PACKAGE_MANIFEST.json`
+- `RELEASE_MANIFEST.json`
+- `COMPLETION_CRITERIA_LEDGER.md`
+- `TEST_EVIDENCE.md`

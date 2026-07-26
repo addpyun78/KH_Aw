@@ -1,31 +1,16 @@
-# KH_Aw 3.2.0 최종 요구사항 감사
+# KH_Aw 4.0.0 Requirement Audit
 
-## 핵심 결론
+The attached instruction file was read in full: 1,315 lines and 35,253 bytes. Its
+research and reproduction filenames were created exactly, and all 40 terminal
+conditions are tracked individually in `COMPLETION_CRITERIA_LEDGER.md`.
 
-계획서의 요구를 단순 안내 문구가 아니라 실행 중 실패를 발생시키는 검사 규칙으로 연결했습니다.
+Key machine-enforced changes include one public entrypoint, installation/cache
+resolution, categorized doctor scopes, normalized text integrity, project runtime,
+resume, semantic requirement compilation, source reachability, task graph, issue
+classification, independent verification, claim verification, version ledger, and
+deterministic packaging.
 
-## 요구사항별 반영
-
-| 요구사항 | 시스템 반영 |
-|---|---|
-| 앱·웹 프로젝트 유형 구분 | 유형을 자동 분류하고 `run-lock.json`에 잠금 |
-| HTML 기반 Android WebView 앱 | WebView 진입점, 브릿지, assets, APK 내부 파일 검사 |
-| 일반 웹·반응형 웹 | 라우트, 반응형, 빌드 산출물, 브라우저 검사 |
-| 사용자 지시 누락 방지 | 요구 단위 상태와 물리 증거를 전체 단계에서 검사 |
-| 분석 폴더 보호 | 작업 전후 해시 비교 |
-| Kotlin·legacy 대량 복사 방지 | 원본과 결과물 전체 파일 해시 비교 |
-| 화면명 하드코딩 방지 | 소스, 라우트, 메뉴, 모델에서 프로젝트별 후보 생성 |
-| 웹검색 본문 추출 | 실제 본문 파일, 길이, 상태, 적용 위치 검사 |
-| 최신 공식문서 | 핵심 기술의 공식 근거와 확인 날짜 검사 |
-| 디자인 누락 방지 | 설계 목업, 실제 구현, 스크린샷 검증을 각각 강제 |
-| 이미지·히어로·모션 | 실제 파일, 코드, 화면 증거를 연결해 검사 |
-| 담당자 실제 작업 | 단계별 독립 결과, 세션, 교차 검토, 리드 합산 검사 |
-| Codex 슬래시 기능 | 실제 Codex 세션 JSONL의 호출 증거를 검사 |
-| 빌드 내부 반영 | APK 또는 웹 빌드 안의 실제 사용자 파일 검사 |
-| 세션과 보고 일치 | 실패 명령, 미실행, 최종 보고를 세션과 대조 |
-| 언어 분리 | 내부 Codex 자료는 영어, 패널·앱·웹 사용자 내용은 한국어 |
-| 거짓 완료 방지 | `failed`, `blocked`, `not_run`이 하나라도 있으면 완료 차단 |
-
-## 정직한 제한
-
-플러그인이 선택되거나 KH_Aw 실행이 시작되지 않은 일반 Codex 작업까지 플러그인 코드가 전역으로 가로챌 수는 없습니다. 그러나 KH_Aw가 시작된 실행 안에서는 필수 증거가 없을 때 대체 기록만으로 통과하지 못하도록 변경했습니다.
+The audit intentionally leaves conditions 26, 27, 37, and 38 open because the exact
+redesigned state has not been publicly installed into a fresh Codex session. Several
+full-run conditions also remain pending real eight-stage evidence. Nothing in this
+document overrides those statuses.

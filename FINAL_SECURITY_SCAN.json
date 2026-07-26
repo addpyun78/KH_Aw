@@ -1,10 +1,10 @@
 {
   "schemaVersion": "3.0",
-  "scannedAt": "2026-07-24T08:20:41.034361+00:00",
-  "scannedRoot": "/mnt/data/KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE",
+  "scannedAt": "2026-07-26T07:30:18.574414+00:00",
+  "scannedRoot": "C:/KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE",
   "rootExists": true,
-  "fileCount": 85,
-  "totalBytes": 2434966,
+  "fileCount": 442,
+  "totalBytes": 4263142,
   "findings": [],
   "status": "passed"
 }

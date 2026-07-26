@@ -68,6 +68,13 @@ SOURCE_OR_PATH_KEYS = {
     "url",
     "workspaceRoot",
 }
+MACHINE_OUTPUT_KEYS = {
+    "error",
+    "stdout",
+    "stderr",
+    "output",
+    "versionOutput",
+}
 
 
 def language_policy() -> dict[str, Any]:
@@ -98,7 +105,7 @@ def _field_is_language_exempt(field_path: str) -> bool:
     if not segments:
         return False
     leaf = segments[-1]
-    if leaf in USER_TEXT_KEYS or leaf in SOURCE_OR_PATH_KEYS:
+    if leaf in USER_TEXT_KEYS or leaf in SOURCE_OR_PATH_KEYS or leaf in MACHINE_OUTPUT_KEYS:
         return True
     return leaf.endswith(("Path", "Paths", "Root", "Url", "URL", "Uri", "URI", "Sha256"))
 

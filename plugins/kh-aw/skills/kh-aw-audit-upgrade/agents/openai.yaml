@@ -1,6 +1,0 @@
-interface:
-  display_name: "KH_Aw 전수조사"
-  short_description: "전체 파일과 실행 경로를 빠짐없이 조사하고 보강"
-  default_prompt: "Use the KH_Aw contracts and executable gates to complete this audit with physical file and runtime evidence."
-policy:
-  allow_implicit_invocation: true

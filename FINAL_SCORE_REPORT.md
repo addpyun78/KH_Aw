@@ -1,26 +1,11 @@
-# KH_Aw 3.2.0 품질 판정 보고서
+# KH_Aw 4.0.0 Quality Status
 
-## 판정
+No terminal score is assigned while public-install and fresh-session E2E conditions
+remain open.
 
-현재 시스템 소스와 패키지 구조에서 확인된 필수 검사는 모두 통과했습니다. 다만 실제 대상 프로젝트를 새 버전으로 다시 실행하기 전이므로 “제품 완성도 100점”으로 표현하지 않습니다.
-
-## 통과한 시스템 항목
-
-- 53개 회귀 테스트
-- 프로젝트 유형별 앱·웹 분기
-- 사용자 지시와 결과 증거 연결
-- 분석 원본 보호와 대량 복사 차단
-- 동적 페이지·기능·상태 인벤토리
-- 웹본문과 최신 공식문서 근거
-- 디자인 설계·구현·검증 연결
-- 이미지·히어로·모션·반응형 검증
-- APK·웹 빌드 내부 산출물 검사
-- 실제 Codex 슬래시 기능과 세션 증거
-- 독립 담당자와 교차 검토
-- 내부 영어와 사용자 화면 한국어 분리
-- 실패 또는 미실행 시 완료 차단
-- 패키지 무결성과 보안 검사
-
-## 남은 실제 확인
-
-새 플러그인을 Codex에 설치한 뒤 동일한 사용자 지시로 회귀 실행해야 합니다. 그 실행에서 생성되는 `.kh_aw`, 실제 화면, APK 또는 웹 빌드, 브라우저·에뮬레이터 증거까지 통과해야 해당 결과물을 완료로 판정할 수 있습니다.
+Local evidence covers root-cause repair, architecture, unit/integration regressions,
+plugin and distribution doctor checks, cache-path behavior, CRLF integrity, shadow
+detection, and deterministic packaging. External publication, supported installation,
+direct `@kh-aw` invocation, and one complete real release run are separately marked
+`external-not-run` or `implemented-needs-full-run` in
+`COMPLETION_CRITERIA_LEDGER.md`.

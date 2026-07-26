@@ -1,6 +1,0 @@
-interface:
-  display_name: "KH_Aw 최종 검증"
-  short_description: "전체 화면·테스트·보안·릴리스를 실제 증거로 확인"
-  default_prompt: "Use the KH_Aw release contract and executable gates to validate every page, runtime artifact, security rule, and completion claim."
-policy:
-  allow_implicit_invocation: true

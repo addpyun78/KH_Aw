@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "researchedAt": "2026-07-26",
+  "minimumRequired": 15,
+  "count": 15,
+  "repositories": [
+    {"id":"official-figma","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/figma","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-notion","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/notion","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-build-ios-apps","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/build-ios-apps","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-build-macos-apps","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/build-macos-apps","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-build-web-apps","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/build-web-apps","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-expo","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/expo","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-netlify","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/netlify","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-remotion","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/remotion","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-github","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/github","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"official-codex-security","source":"official","repository":"https://github.com/openai/plugins","path":"plugins/codex-security","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9"},
+    {"id":"community-a-team","source":"community","repository":"https://github.com/RBraga01/a-team","path":".","commit":"f67b0ed0e028fa7febbf89b3ad4a02ebb44e6b64"},
+    {"id":"community-tailtest","source":"community","repository":"https://github.com/avansaber/tailtest-codex","path":".","commit":"61132f9e6c4f9703ec707d7bf0d561fa49e64a2a"},
+    {"id":"community-bringyour-mcp","source":"community","repository":"https://github.com/unitedideas/bringyour-mcp","path":".","commit":"75f001964fd40540c47b392a8dd0ef9b1cbd8ed4"},
+    {"id":"community-codetruss","source":"community","repository":"https://github.com/DeliriumPulse/codetruss-plugins","path":".","commit":"909632e421e384b44f2a2fca1b22733e76982f27"},
+    {"id":"community-process-jobs","source":"community","repository":"https://github.com/joelfarthing/codex-process-jobs","path":".","commit":"e35770cb6b65beb0f77a9e111e5c96d71b714f4d"}
+  ]
+}

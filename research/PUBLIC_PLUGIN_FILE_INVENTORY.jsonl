@@ -1,0 +1,15 @@
+{"id":"official-figma","files":113,"skills":12,"scripts":10,"references":67,"hooks":true,"mcp":true,"app":true,"agents":true,"commands":true}
+{"id":"official-notion","files":88,"skills":4,"scripts":0,"references":0,"hooks":false,"mcp":true,"app":true,"agents":true,"commands":false}
+{"id":"official-build-ios-apps","files":76,"skills":9,"scripts":9,"references":43,"hooks":false,"mcp":true,"app":false,"agents":true,"commands":false}
+{"id":"official-build-macos-apps","files":42,"skills":11,"scripts":0,"references":true,"hooks":false,"mcp":false,"app":false,"agents":true,"commands":true}
+{"id":"official-build-web-apps","files":138,"skills":6,"scripts":0,"references":39,"hooks":false,"mcp":false,"app":false,"agents":false,"commands":false}
+{"id":"official-expo","files":67,"skills":13,"scripts":3,"references":32,"hooks":false,"mcp":false,"app":false,"agents":false,"commands":false}
+{"id":"official-netlify","files":74,"skills":12,"scripts":0,"references":true,"hooks":false,"mcp":false,"app":true,"agents":false,"commands":false}
+{"id":"official-remotion","files":45,"skills":1,"scripts":0,"references":true,"hooks":false,"mcp":false,"app":false,"agents":false,"commands":false}
+{"id":"official-github","files":28,"skills":4,"scripts":2,"references":true,"hooks":false,"mcp":true,"app":true,"agents":false,"commands":false}
+{"id":"official-codex-security","files":86,"skills":12,"scripts":21,"references":26,"hooks":false,"mcp":true,"app":true,"agents":false,"commands":false}
+{"id":"community-a-team","files":181,"skills":20,"scripts":10,"hooks":4,"agents":26,"commands":20,"tests":42}
+{"id":"community-tailtest","files":46,"skills":1,"scripts":1,"hookFiles":20,"agents":0,"commands":0,"tests":7}
+{"id":"community-bringyour-mcp","files":26,"skills":1,"scripts":0,"hooks":0,"agents":2,"commands":0,"tests":0}
+{"id":"community-codetruss","files":31,"skills":3,"scripts":3,"hooks":0,"agents":3,"commands":0,"tests":0}
+{"id":"community-process-jobs","files":88,"skills":5,"scripts":17,"hooks":2,"agents":5,"commands":0,"tests":17}

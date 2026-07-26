@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .util import read_json, sha256_file, utc_now, write_json
+from .claim_verifier import verify_claims
 
 SLASH_RE = re.compile(r"(?<!\w)/(?:goal|plan|context|agents|search|artifact|diff|review|test|hooks)\b")
 
@@ -78,18 +79,22 @@ def build_session_forensics(run_root: Path, session_jsonl: Path, session_id: str
     evidence_mismatches = []
     for capability_id in sorted(required_ids):
         record = records.get(capability_id)
-        valid = bool(
-            record
-            and record.get("mode") == "native"
-            and record.get("status") == "verified"
+        native_valid = bool(
+            record and record.get("mode") == "native" and record.get("status") == "verified"
             and record.get("sessionId") == session_id
             and str(record.get("preferredSlash", "")) in slash_invocations
         )
+        physical_valid = bool(
+            record and record.get("mode") == "fallback" and record.get("status") == "verified"
+            and (run_root / str(record.get("evidencePath", ""))).is_file()
+        )
+        valid = native_valid or physical_valid
         capability_findings.append({
             "capabilityId": capability_id,
             "preferredSlash": record.get("preferredSlash") if record else "",
             "recordedSessionId": record.get("sessionId") if record else "",
-            "foundInSession": valid,
+            "foundInSession": native_valid,
+            "physicalAlternativeVerified": physical_valid,
         })
         if not valid:
             evidence_mismatches.append({
@@ -103,8 +108,17 @@ def build_session_forensics(run_root: Path, session_jsonl: Path, session_id: str
     if not source_mentions_session:
         not_run.append("session-id-binding")
 
+    evidence_paths = [
+        run_root / str(record.get("evidencePath", ""))
+        for record in records.values()
+        if record.get("evidencePath")
+    ]
+    claim_audit = verify_claims("\n".join(final_claims), evidence_paths)
+    if final_claims and not claim_audit["verified"]:
+        evidence_mismatches.append({"type": "final-claim-without-physical-evidence"})
+
     payload = {
-        "schemaVersion": "3.2",
+        "schemaVersion": "4.0",
         "generatedAt": utc_now(),
         "sessionId": session_id,
         "sourceSessionPath": source.as_posix(),
@@ -115,6 +129,7 @@ def build_session_forensics(run_root: Path, session_jsonl: Path, session_id: str
         "failedCommands": failed_commands,
         "notRunRequiredChecks": not_run,
         "finalReportClaims": final_claims,
+        "claimVerification": claim_audit,
         "evidenceMismatches": evidence_mismatches,
         "slashCapabilityFindings": capability_findings,
         "completionTruth": "verified" if not failed_commands and not not_run and not evidence_mismatches else "blocked",
@@ -122,4 +137,3 @@ def build_session_forensics(run_root: Path, session_jsonl: Path, session_id: str
     }
     write_json(run_root / "audit" / "session-forensics.json", payload)
     return payload
-

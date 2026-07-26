@@ -54,7 +54,7 @@ A worker inventory, a fallback claim, or duplicate output is not independent wor
 
 ## 5. Use native slash capabilities
 
-Every stage requires native `/goal` and `/agents` evidence. Additional native capabilities are stage-specific. Store the actual invocation, Codex session ID, physical output, and physical Codex rollout JSONL through `record-native`. The rollout must contain both the session identity and slash invocation. A required capability fails closed when the surface cannot provide native evidence; optional capabilities alone may use a physical fallback.
+Every stage requires physical evidence for goal control and independent delegation. Use a native Codex command when the active surface exposes it; otherwise bind the equivalent tool or subagent receipt. Store the invocation, session ID, physical output, and rollout JSONL when a native session is used. Unsupported slash names are never mandatory.
 
 ## 6. Research real source bodies
 

@@ -1,6 +1,0 @@
-interface:
-  display_name: "KH_Aw 조사·디자인"
-  short_description: "실제 웹본문 조사와 전체 화면 디자인을 강제"
-  default_prompt: "Use the KH_Aw research and design gates to extract real source bodies and produce project-specific visual designs for every discovered page."
-policy:
-  allow_implicit_invocation: true

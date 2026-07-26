@@ -1,7 +1,7 @@
 {
   "name": "kh-aw",
-  "version": "3.2.1",
-  "description": "Logic-enforced Codex app/web company workflow with dynamic 2-60 independent subagents per stage, native capability evidence, exhaustive audits, direct body research, every-page mockups, real browser/emulator/simulator/tool evidence, and nonterminal auto-repair. APK installation is excluded.",
+  "version": "4.0.0",
+  "description": "Evidence-gated Codex development workflow for auditing, research, implementation, repair, resume, verification, and deterministic release packaging across project types.",
   "author": {
     "name": "addpyun78",
     "url": "https://github.com/addpyun78"
@@ -11,33 +11,20 @@
   "license": "MIT",
   "keywords": [
     "codex",
-    "app-development",
-    "web-development",
+    "development-workflow",
     "full-audit",
-    "visual-mockups",
-    "web-research",
+    "public-research",
+    "resume",
     "auto-repair",
     "quality-gates",
-    "small-business",
-    "slash-capabilities",
-    "playwright",
-    "accessibility",
-    "lighthouse",
-    "android-emulator",
-    "ios-simulator",
-    "visual-regression",
-    "apk-install-excluded",
     "multi-agent",
-    "subagents",
-    "dynamic-orchestration",
-    "2-60-agents",
-    "cross-review"
+    "deterministic-packaging"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "KH_Aw",
-    "shortDescription": "증거 게이트로 앱·웹 전체 과정을 강제",
-    "longDescription": "KH_Aw는 앱과 웹 프로젝트를 위한 실패 차단형 Codex 작업 시스템입니다. 사용자 지시 원문 보존, 분석 폴더 보호, 프로젝트 유형 분류, 전체 파일과 화면 후보 전수조사, 실제 웹·GitHub 본문 추출, 프로젝트별 디자인 목업, 실제 구현, 브라우저·에뮬레이터·빌드 산출물 검증을 단계별로 강제합니다. 각 단계는 독립 Codex 담당자 세션, 교차검토, 실제 슬러시 기능 사용 증거, 수리 장부, 정확한 통과 상태가 모두 확인되어야 넘어갑니다. 누락·미실행·차단·실패가 있으면 완료로 표시하지 않습니다.",
+    "shortDescription": "증거로 검사하고 복구하는 Codex 개발 작업 시스템",
+    "longDescription": "KH_Aw는 사용자 지시 원문 보존, 전체 파일 조사, 공개 자료 연구, 구현, 독립 검토, 실제 테스트, 중단 후 재개, 원인별 자동 수리, 설치 캐시 진단과 재현 가능한 패키징을 하나의 진입점에서 관리합니다. 실행하지 않은 검사를 통과로 기록하지 않으며 모든 최종 주장을 물리적 증거에 연결합니다.",
     "developerName": "addpyun78",
     "category": "Developer Tools",
     "capabilities": [
@@ -49,10 +36,9 @@
     "privacyPolicyURL": "https://github.com/addpyun78/KH_Aw/blob/kh-aw-marketplace/plugins/kh-aw/PRIVACY.md",
     "termsOfServiceURL": "https://github.com/addpyun78/KH_Aw/blob/kh-aw-marketplace/plugins/kh-aw/TERMS.md",
     "defaultPrompt": [
-      "Run KH_Aw for this app or web request. Preserve the exact user instructions and execute every required stage with physical evidence.",
-      "Protect any analysis folder as read-only. Use dynamically assigned independent Codex workers, cross-review, real web-body extraction, every-page mockups, and traced implementation.",
-      "Run the target-specific build, test, browser, emulator, or simulator checks. Do not install an APK.",
-      "Do not report completion while any required gate is failed, blocked, not run, or supported only by a claim."
+      "Run KH_Aw. Preserve exact instructions, inspect all files, and select the project pipeline from physical evidence.",
+      "Use available Codex tools and independent workers by capability. Link implementation, tests, and claims to evidence.",
+      "Resume saved state after interruption. Never report a terminal result while any required gate is not verified."
     ],
     "brandColor": "#0B6E4F",
     "composerIcon": "./assets/icon.png",

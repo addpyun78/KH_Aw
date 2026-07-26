@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "principle": "Require behavior, not a surface-specific command spelling.",
+  "capabilities": [
+    {"behavior":"goal intake","nativeExamples":["/goal"],"physicalAlternatives":["exact instruction contract"],"required":true},
+    {"behavior":"planning","nativeExamples":["/plan"],"physicalAlternatives":["task-graph.json"],"required":true},
+    {"behavior":"delegation","nativeExamples":["subagent tools"],"physicalAlternatives":["dispatch and session receipts"],"required":true},
+    {"behavior":"context inspection","nativeExamples":[],"physicalAlternatives":["inventory and source-reachability"],"required":true},
+    {"behavior":"public research","nativeExamples":["web search"],"physicalAlternatives":["body files and citation ledger"],"required":true},
+    {"behavior":"change inspection","nativeExamples":[],"physicalAlternatives":["git diff and file hashes"],"required":true},
+    {"behavior":"review","nativeExamples":["/review"],"physicalAlternatives":["independent verifier evidence"],"required":true},
+    {"behavior":"testing","nativeExamples":[],"physicalAlternatives":["recorded real commands"],"required":true},
+    {"behavior":"lifecycle hooks","nativeExamples":["plugin hooks"],"physicalAlternatives":["gate event ledger"],"required":false}
+  ]
+}

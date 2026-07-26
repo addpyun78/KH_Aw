@@ -1,7 +1,7 @@
 {
   "name": "kh-aw-tooling",
   "private": true,
-  "version": "3.2.1",
+  "version": "4.0.0",
   "type": "module",
   "scripts": {
     "bootstrap": "npm install && npx playwright install chromium firefox webkit",

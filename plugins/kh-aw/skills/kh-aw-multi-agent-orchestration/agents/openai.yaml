@@ -1,6 +1,0 @@
-interface:
-  display_name: "KH_Aw 다중 담당자"
-  short_description: "단계별 2~60개 독립 Codex 담당자를 실제 세션으로 강제"
-  default_prompt: "Compute the dynamic worker plan for the current KH_Aw stage, run independent Codex sessions, cross-review their outputs, and complete the lead aggregation with physical evidence."
-policy:
-  allow_implicit_invocation: true

@@ -7,14 +7,9 @@ from typing import Any
 
 from .util import sha256_file
 
-EXPECTED_VERSION = "3.2.1"
+EXPECTED_VERSION = "4.0.0"
 EXPECTED_SKILLS = {
-    "kh-aw-audit-upgrade",
-    "kh-aw-full-cycle",
-    "kh-aw-implementation-repair",
-    "kh-aw-multi-agent-orchestration",
-    "kh-aw-release-company",
-    "kh-aw-research-design",
+    "kh-aw",
 }
 REQUIRED_PLUGIN_FILES = {
     ".codex-plugin/plugin.json",
@@ -36,6 +31,17 @@ REQUIRED_PLUGIN_FILES = {
     "scripts/kh_aw/page_inventory.py",
     "scripts/kh_aw/session_forensics.py",
     "scripts/kh_aw/targeting.py",
+    "scripts/kh_aw/doctor.py",
+    "scripts/kh_aw/installation.py",
+    "scripts/kh_aw/runtime.py",
+    "scripts/kh_aw/requirement_compiler.py",
+    "scripts/kh_aw/reachability.py",
+    "scripts/kh_aw/task_graph.py",
+    "scripts/kh_aw/claim_verifier.py",
+    "scripts/kh_aw/versioning.py",
+    "scripts/kh_aw/packaging.py",
+    "scripts/kh_aw/e2e.py",
+    "scripts/kh_aw/verifier.py",
     "scripts/android_emulator_suite.py",
     "scripts/ios_simulator_suite.py",
     "scripts/web_verify.mjs",
@@ -51,6 +57,10 @@ REQUIRED_PLUGIN_FILES = {
     "tests/test_kh_aw.py",
 }
 REQUIRED_MARKETPLACE_FILES = {
+    ".gitattributes",
+    "VERSION_LEDGER.json",
+    "COMPLETION_CRITERIA_LEDGER.md",
+    "TEST_EVIDENCE.md",
     ".agents/plugins/marketplace.json",
     ".github/workflows/kh-aw-ci.yml",
     "README.md",
@@ -76,13 +86,41 @@ REQUIRED_MARKETPLACE_FILES = {
     "audit/UPGRADE_MAPPING.md",
     "audit/REQUIREMENTS_TRACEABILITY.md",
     "audit/SCORE_REPORT.md",
+    "audit/current/inventory-summary.json",
+    "audit/current/inventory.jsonl",
+    "audit/current/inventory.csv",
+    "audit/current/FULL_PROGRAM_AUDIT.md",
+    "design/NEW_ARCHITECTURE.md",
+    "docs/BEGINNER_GUIDE_KO.md",
+    "docs/INSTALL_UPDATE_REMOVE_KO.md",
+    "docs/TROUBLESHOOTING_KO.md",
+    "research/OFFICIAL_CODEX_PLUGIN_MODEL.md",
+    "research/PUBLIC_PLUGIN_REPOSITORY_LIST.json",
+    "research/PUBLIC_PLUGIN_FILE_INVENTORY.jsonl",
+    "research/PLUGIN_STRUCTURE_COMPARISON.csv",
+    "research/SKILL_ENTRYPOINT_COMPARISON.md",
+    "research/SCRIPT_HOOK_MCP_AGENTS_CI_COMPARISON.md",
+    "research/INSTALL_CACHE_SHADOWING_COMPARISON.md",
+    "research/PLATFORM_CAPABILITY_MATRIX.json",
+    "research/PUBLIC_PLUGIN_SUCCESS_PATTERNS.md",
+    "research/PUBLIC_PLUGIN_FAILURE_PATTERNS.md",
+    "research/KH_AW_STRUCTURAL_DIFFERENCE_REPORT.md",
+    "research/SOURCE_CITATION_LEDGER.jsonl",
+    "reproduction/REPRODUCTION_MATRIX.md",
+    "reproduction/INSTALLATION_SNAPSHOTS.jsonl",
+    "reproduction/DOCTOR_RUNS.jsonl",
+    "reproduction/ROOT_RESOLUTION_LOGS.jsonl",
+    "reproduction/CACHE_SHADOWING_REPORT.md",
+    "reproduction/SKILL_VISIBILITY_REPORT.md",
+    "reproduction/MANUAL_BYPASS_REPRODUCTION.md",
+    "reproduction/ROOT_CAUSE_EVIDENCE.md",
 }
 FORBIDDEN_PARTS = {"node_modules", "__pycache__", ".playwright", "browser-profile", "user-data-dir"}
 INTERNAL_TEXT_SUFFIXES = {".json", ".md", ".mjs", ".py", ".yaml", ".yml"}
 INTERNAL_TEXT_EXCLUSIONS: set[str] = set()
 USER_FACING_METADATA_FILES = {".codex-plugin/plugin.json"}
 HANGUL_PATTERN = re.compile(r"[\uac00-\ud7a3]")
-RELEASE_MANIFEST_EXCLUDED_PARTS = {".git", "__pycache__", ".pytest_cache", "node_modules"}
+RELEASE_MANIFEST_EXCLUDED_PARTS = {".git", "__pycache__", ".pytest_cache", "node_modules", "dist"}
 RELEASE_MANIFEST_EXCLUDED_FILES = {
     "RELEASE_MANIFEST.json",
     "KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE.zip.sha256",
@@ -154,14 +192,15 @@ def validate_distribution(plugin_root: Path, marketplace_root: Path) -> list[str
             errors.append(f"distribution missing required marketplace file: {rel}")
 
     skills_root = plugin_root / "skills"
-    actual_skills = {path.name for path in skills_root.iterdir() if path.is_dir()} if skills_root.is_dir() else set()
+    actual_skills = {
+        path.name for path in skills_root.iterdir()
+        if path.is_dir() and (path / "SKILL.md").is_file()
+    } if skills_root.is_dir() else set()
     if actual_skills != EXPECTED_SKILLS:
         errors.append(f"skill set mismatch: expected={sorted(EXPECTED_SKILLS)} actual={sorted(actual_skills)}")
     for skill in EXPECTED_SKILLS:
         if not (skills_root / skill / "SKILL.md").is_file():
             errors.append(f"skill missing SKILL.md: {skill}")
-        if not (skills_root / skill / "agents" / "openai.yaml").is_file():
-            errors.append(f"skill missing agents/openai.yaml: {skill}")
 
     manifest = _load_json(plugin_root / ".codex-plugin" / "plugin.json", errors, "plugin manifest")
     package = _load_json(plugin_root / "package.json", errors, "package.json")
@@ -224,18 +263,5 @@ def validate_distribution(plugin_root: Path, marketplace_root: Path) -> list[str
             continue
         if any(ord(character) > 127 for character in text):
             errors.append(f"Codex-facing package text must use English ASCII content: {relative}")
-
-    for skill in EXPECTED_SKILLS:
-        agent_path = skills_root / skill / "agents" / "openai.yaml"
-        if not agent_path.is_file():
-            continue
-        text = agent_path.read_text(encoding="utf-8")
-        display = re.search(r'^\s*display_name:\s*["\'](.+?)["\']\s*$', text, re.MULTILINE)
-        short = re.search(r'^\s*short_description:\s*["\'](.+?)["\']\s*$', text, re.MULTILINE)
-        prompt = re.search(r'^\s*default_prompt:\s*["\'](.+?)["\']\s*$', text, re.MULTILINE)
-        if not display or not short or not HANGUL_PATTERN.search(display.group(1)) or not HANGUL_PATTERN.search(short.group(1)):
-            errors.append(f"skill user-facing agent labels must be Korean: {skill}")
-        if not prompt or any(ord(character) > 127 for character in prompt.group(1)):
-            errors.append(f"skill Codex-facing default_prompt must be English ASCII: {skill}")
 
     return sorted(set(errors))

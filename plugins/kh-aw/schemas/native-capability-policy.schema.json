@@ -5,9 +5,9 @@
   "type": "object",
   "required": ["schemaVersion", "requiredEvidenceMode", "fallbackSatisfiesRequiredCapability", "capabilities", "records"],
   "properties": {
-    "schemaVersion": {"const": "3.0"},
-    "requiredEvidenceMode": {"const": "native"},
-    "fallbackSatisfiesRequiredCapability": {"const": false},
+    "schemaVersion": {"const": "4.0"},
+    "requiredEvidenceMode": {"const": "physical-capability"},
+    "fallbackSatisfiesRequiredCapability": {"const": true},
     "capabilities": {
       "type": "array",
       "minItems": 9,
@@ -18,7 +18,7 @@
         "properties": {
           "id": {"type": "string", "minLength": 1},
           "stage": {"type": "string", "enum": ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]},
-          "preferredSlash": {"type": "string", "pattern": "^/"},
+          "preferredSlash": {"type": "string", "pattern": "^$|^/"},
           "required": {"type": "boolean"},
           "fallback": {"type": "string", "minLength": 1}
         },

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "4.0",
+  "plugin": "kh-aw",
+  "version": "4.0.0",
+  "sourceOfTruth": "plugins/kh-aw/.codex-plugin/plugin.json",
+  "synchronizedFiles": [
+    "plugins/kh-aw/package.json",
+    "plugins/kh-aw/PACKAGE_MANIFEST.json",
+    "RELEASE_MANIFEST.json",
+    "RELEASE_NOTES.md"
+  ],
+  "zipPattern": "kh-aw-{version}.zip",
+  "cachePattern": "<CODEX_HOME>/plugins/cache/<marketplace>/kh-aw/{version}"
+}

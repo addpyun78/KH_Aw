@@ -1,0 +1,3 @@
+{"at":"2026-07-26","id":"installed-cache-before-redesign","root":"C:/Users/pyun7/.codex/plugins/cache/kh-aw-marketplace/kh-aw/3.2.1","version":"3.2.1","kind":"versioned-cache","skills":["kh-aw-audit-upgrade","kh-aw-full-cycle","kh-aw-implementation-repair","kh-aw-multi-agent-orchestration","kh-aw-release-company","kh-aw-research-design"],"activeInstallationConfirmed":false}
+{"at":"2026-07-26","id":"workspace-redesign","root":"C:/KH_Aw_Codex_Marketplace_v3.2.0_COMPLETE/plugins/kh-aw","version":"4.0.0","skills":["kh-aw"],"pluginDoctor":"passed","distributionDoctor":"passed"}
+{"at":"2026-07-26","id":"temporary-version-cache-e2e","root":"<temp>/codex/plugins/cache/market/kh-aw/4.0.0","version":"4.0.0","pluginDoctor":"passed","physicalTemporaryCopy":true}

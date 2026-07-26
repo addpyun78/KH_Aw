@@ -25,6 +25,12 @@ from kh_aw.gates import gate_test, run_gate
 from kh_aw.inventory import build_inventory
 from kh_aw.language_policy import internal_language_issues, korean_ui_character_count
 from kh_aw.plugin_validate import validate_plugin
+from kh_aw.integrity import build_package_manifest, validate_package_manifest
+from kh_aw.installation import inspect_installations, skill_visibility
+from kh_aw.packaging import build_deterministic_zip
+from kh_aw.requirement_compiler import compile_requirements
+from kh_aw.runtime import resume_run
+from kh_aw.task_graph import build_task_graph
 from kh_aw.orchestration import (
     MIN_SUBAGENTS, MAX_SUBAGENTS, ensure_agent_plan, recommended_subagent_count,
     record_subagent_result, record_lead_aggregation, orchestration_issues,
@@ -347,7 +353,7 @@ class KHAwTest(unittest.TestCase):
         self.assertEqual(record["evidenceSha256"], sha256_file(evidence))
         self.assertEqual(record["sessionEvidenceSha256"], sha256_file(session))
 
-    def test_required_slash_fallback_cannot_pass(self):
+    def test_physical_capability_fallback_is_supported(self):
         evidence = self.run / "evidence" / "fallback-plan.txt"
         evidence.parent.mkdir(parents=True, exist_ok=True)
         evidence.write_text("physical diagnostic fallback output", encoding="utf-8")
@@ -359,7 +365,7 @@ class KHAwTest(unittest.TestCase):
             invocation="kh-aw-state-plan",
         )
         gate = run_gate(self.run, self.state, "intake")
-        self.assertIn("NATIVE_SLASH_REQUIRED", {item["code"] for item in gate["issues"]})
+        self.assertNotIn("NATIVE_SLASH_REQUIRED", {item["code"] for item in gate["issues"]})
 
     def test_stage_status_prefix_cannot_pass(self):
         self.assertTrue(stage_status_passed("passed"))
@@ -827,6 +833,69 @@ class KHAwTest(unittest.TestCase):
             self.assertTrue(any("release manifest hash/size mismatch" in item for item in errors))
         finally:
             target.write_bytes(backup)
+
+    def test_versioned_cache_folder_is_a_valid_plugin_root(self):
+        cache_root = self.temp / "cache" / "kh-aw" / "4.0.0"
+        shutil.copytree(PLUGIN_ROOT, cache_root)
+        self.assertFalse(any("folder name" in item for item in validate_plugin(cache_root)))
+
+    def test_manifest_accepts_declared_lf_content_after_crlf_checkout(self):
+        package = self.temp / "line-endings"
+        (package / ".codex-plugin").mkdir(parents=True)
+        (package / ".codex-plugin" / "plugin.json").write_text(
+            '{"name":"kh-aw","version":"4.0.0"}\n', encoding="utf-8", newline="\n"
+        )
+        sample = package / "sample.txt"
+        sample.write_text("one\ntwo\n", encoding="utf-8", newline="\n")
+        build_package_manifest(package)
+        sample.write_bytes(b"one\r\ntwo\r\n")
+        self.assertEqual(validate_package_manifest(package), [])
+
+    def test_plugin_target_is_inferred_from_manifest_instruction(self):
+        inferred = infer_target_pipeline("Redesign this Codex plugin and plugin.json")
+        self.assertEqual(inferred["targetPipeline"], "codex-plugin")
+
+    def test_requirement_compiler_preserves_and_classifies_every_line(self):
+        result = compile_requirements("Do not skip tests.\nCache evidence is required.\n")
+        self.assertEqual(result["rawInstructionCount"], 2)
+        self.assertEqual(result["rawInstructionCoverage"][0]["sourceText"], "Do not skip tests.")
+        self.assertIn("prohibition", result["requirements"][0]["classifications"])
+        self.assertIn("installation", result["requirements"][1]["classifications"])
+
+    def test_task_graph_links_every_requirement(self):
+        requirements = compile_requirements("First\nSecond\nThird")
+        graph = build_task_graph(requirements)
+        self.assertEqual(len(graph["tickets"]), 3)
+        self.assertEqual(graph["tickets"][1]["dependencies"], ["TICKET-0001"])
+        self.assertEqual(requirements["requirements"][2]["implementationTickets"], ["TICKET-0003"])
+
+    def test_resume_keeps_repair_history_and_selects_first_incomplete_stage(self):
+        self.state["stageStatus"]["intake"] = "passed"
+        self.state["repair"]["signatures"]["abc"] = {"attempt": 2}
+        save_state(self.run, self.state)
+        result = resume_run(self.run)
+        self.assertEqual(result["resume"]["stage"], "analyze")
+        self.assertEqual(result["state"]["repair"]["signatures"]["abc"]["attempt"], 2)
+
+    def test_deterministic_zip_rebuild_has_same_hash(self):
+        first = build_deterministic_zip(PLUGIN_ROOT, self.temp / "one.zip")
+        second = build_deterministic_zip(PLUGIN_ROOT, self.temp / "two.zip")
+        self.assertEqual(first["sha256"], second["sha256"])
+
+    def test_installation_inventory_detects_duplicate_version_roots(self):
+        home = self.temp / "codex-home"
+        for marketplace in ("one", "two"):
+            target = home / "plugins" / "cache" / marketplace / "kh-aw" / "4.0.0"
+            (target / ".codex-plugin").mkdir(parents=True)
+            shutil.copy2(PLUGIN_ROOT / ".codex-plugin" / "plugin.json", target / ".codex-plugin" / "plugin.json")
+        result = inspect_installations(home=home)
+        self.assertTrue(result["shadowingRisk"])
+        self.assertEqual(len(result["duplicates"]), 1)
+
+    def test_skill_visibility_has_one_public_entrypoint(self):
+        result = skill_visibility(PLUGIN_ROOT)
+        self.assertTrue(result["singleEntrypoint"])
+        self.assertEqual([item["name"] for item in result["visibleSkills"]], ["kh-aw"])
 
 
 if __name__ == "__main__":

@@ -6,50 +6,49 @@ from typing import Any
 
 from .util import read_json, sha256_file, utc_now, write_json
 
-# A skill-only plugin cannot invoke Codex UI slash features as a subprocess.
-# Required slash capabilities fail closed until the active Codex session records native
-# evidence. Fallback evidence may support diagnosis, but it never satisfies the gate.
+# Capabilities describe behavior. A slash command is only preferred when the active
+# Codex surface actually exposes it; physical tool/subagent evidence is also valid.
 NATIVE_CAPABILITIES: list[dict[str, Any]] = [
     {"id": "codex-goal-intake", "stage": "intake", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-plan", "stage": "intake", "preferredSlash": "/plan", "fallback": "kh-aw-state-plan", "required": True},
-    {"id": "codex-agents-intake", "stage": "intake", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-agents-intake", "stage": "intake", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-goal-analyze", "stage": "analyze", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
-    {"id": "codex-context", "stage": "analyze", "preferredSlash": "/context", "fallback": "kh-aw-context-inventory", "required": True},
-    {"id": "codex-agents-analyze", "stage": "analyze", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
-    {"id": "codex-artifact-analysis", "stage": "analyze", "preferredSlash": "/artifact", "fallback": "kh-aw-analysis-artifacts", "required": True},
+    {"id": "codex-context", "stage": "analyze", "preferredSlash": "", "fallback": "kh-aw-context-inventory", "required": True},
+    {"id": "codex-agents-analyze", "stage": "analyze", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-artifact-analysis", "stage": "analyze", "preferredSlash": "", "fallback": "kh-aw-analysis-artifacts", "required": True},
     {"id": "codex-goal-research", "stage": "research", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
-    {"id": "codex-agents-research", "stage": "research", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
-    {"id": "codex-web-research", "stage": "research", "preferredSlash": "/search", "fallback": "kh-aw-body-fetch-registry", "required": True},
-    {"id": "codex-artifact-research", "stage": "research", "preferredSlash": "/artifact", "fallback": "kh-aw-research-artifacts", "required": True},
+    {"id": "codex-agents-research", "stage": "research", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-web-research", "stage": "research", "preferredSlash": "", "fallback": "kh-aw-body-fetch-registry", "required": True},
+    {"id": "codex-artifact-research", "stage": "research", "preferredSlash": "", "fallback": "kh-aw-research-artifacts", "required": True},
     {"id": "codex-goal-design", "stage": "design", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
     {"id": "codex-plan-design", "stage": "design", "preferredSlash": "/plan", "fallback": "kh-aw-design-plan", "required": True},
-    {"id": "codex-agents-design", "stage": "design", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
-    {"id": "codex-artifact-design", "stage": "design", "preferredSlash": "/artifact", "fallback": "kh-aw-mockup-artifacts", "required": True},
+    {"id": "codex-agents-design", "stage": "design", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-artifact-design", "stage": "design", "preferredSlash": "", "fallback": "kh-aw-mockup-artifacts", "required": True},
     {"id": "codex-goal-implement", "stage": "implement", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
-    {"id": "codex-agents-implement", "stage": "implement", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
-    {"id": "codex-diff-implement", "stage": "implement", "preferredSlash": "/diff", "fallback": "git-diff-physical", "required": True},
+    {"id": "codex-agents-implement", "stage": "implement", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-diff-implement", "stage": "implement", "preferredSlash": "", "fallback": "git-diff-physical", "required": True},
     {"id": "codex-goal-review", "stage": "review", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
-    {"id": "codex-agents-review", "stage": "review", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-agents-review", "stage": "review", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
     {"id": "codex-review", "stage": "review", "preferredSlash": "/review", "fallback": "kh-aw-browser-review", "required": True},
-    {"id": "codex-diff-review", "stage": "review", "preferredSlash": "/diff", "fallback": "git-diff-physical", "required": True},
+    {"id": "codex-diff-review", "stage": "review", "preferredSlash": "", "fallback": "git-diff-physical", "required": True},
     {"id": "codex-goal-test", "stage": "test", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
-    {"id": "codex-agents-test", "stage": "test", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
-    {"id": "codex-test", "stage": "test", "preferredSlash": "/test", "fallback": "kh-aw-toolchain", "required": True},
+    {"id": "codex-agents-test", "stage": "test", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-test", "stage": "test", "preferredSlash": "", "fallback": "kh-aw-toolchain", "required": True},
     {"id": "codex-hooks", "stage": "test", "preferredSlash": "/hooks", "fallback": "kh-aw-gate-event-log", "required": False},
     {"id": "codex-goal-release", "stage": "release", "preferredSlash": "/goal", "fallback": "kh-aw-stage-goal", "required": True},
-    {"id": "codex-agents-release", "stage": "release", "preferredSlash": "/agents", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
-    {"id": "codex-artifact-release", "stage": "release", "preferredSlash": "/artifact", "fallback": "kh-aw-release-artifacts", "required": True},
-    {"id": "codex-diff-release", "stage": "release", "preferredSlash": "/diff", "fallback": "git-diff-physical", "required": True},
+    {"id": "codex-agents-release", "stage": "release", "preferredSlash": "", "fallback": "kh-aw-agent-dispatch-manifest", "required": True},
+    {"id": "codex-artifact-release", "stage": "release", "preferredSlash": "", "fallback": "kh-aw-release-artifacts", "required": True},
+    {"id": "codex-diff-release", "stage": "release", "preferredSlash": "", "fallback": "git-diff-physical", "required": True},
 ]
 
 
 def capability_policy() -> dict[str, Any]:
     return {
-        "schemaVersion": "3.0",
+        "schemaVersion": "4.0",
         "generatedAt": utc_now(),
-        "requiredEvidenceMode": "native",
-        "fallbackSatisfiesRequiredCapability": False,
-        "rule": "Every required Codex slash capability must be used natively in the active session. A fallback record is diagnostic evidence only and cannot pass a stage gate.",
+        "requiredEvidenceMode": "physical-capability",
+        "fallbackSatisfiesRequiredCapability": True,
+        "rule": "Verify required behavior with native Codex evidence when available, otherwise with a physical tool or subagent receipt. Unsupported slash names are never mandatory.",
         "capabilities": [dict(item) for item in NATIVE_CAPABILITIES],
         "records": [],
     }

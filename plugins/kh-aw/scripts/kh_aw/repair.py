@@ -29,6 +29,35 @@ def failure_signature(stage: str, issues: list[dict[str, Any]]) -> str:
     return hashlib.sha256(f"{stage}|{'|'.join(codes)}".encode()).hexdigest()[:16]
 
 
+def classify_issues(issues: list[dict[str, Any]]) -> dict[str, list[str]]:
+    groups = {
+        "installation": [], "integrity": [], "requirements": [], "source": [],
+        "orchestration": [], "tooling": [], "verification": [], "state": [], "other": [],
+    }
+    for item in issues:
+        code = str(item.get("code", ""))
+        if any(token in code for token in ("INSTALL", "CACHE", "SHADOW", "ROOT_RESOLUTION")):
+            category = "installation"
+        elif any(token in code for token in ("HASH", "MANIFEST", "LOCK", "MUTATED")):
+            category = "integrity"
+        elif any(token in code for token in ("REQUIREMENT", "INSTRUCTION", "OMISSION")):
+            category = "requirements"
+        elif any(token in code for token in ("SOURCE", "RESEARCH", "CITATION")):
+            category = "source"
+        elif any(token in code for token in ("SUBAGENT", "LEAD_AGENT", "ORCHESTR")):
+            category = "orchestration"
+        elif any(token in code for token in ("TOOL", "BUILD", "COMMAND", "EMULATOR", "BROWSER")):
+            category = "tooling"
+        elif any(token in code for token in ("EVIDENCE", "CLAIM", "REVIEW", "TEST")):
+            category = "verification"
+        elif any(token in code for token in ("STATE", "STAGE_ORDER", "RESUME", "CHECKPOINT")):
+            category = "state"
+        else:
+            category = "other"
+        groups[category].append(code)
+    return {key: sorted(set(values)) for key, values in groups.items() if values}
+
+
 def deterministic_repair(run_root: Path, state: dict[str, Any], stage: str, issues: list[dict[str, Any]]) -> dict[str, Any]:
     actions: list[dict[str, Any]] = []
     codes = {str(item.get("code", "")) for item in issues}
@@ -124,7 +153,7 @@ def deterministic_repair(run_root: Path, state: dict[str, Any], stage: str, issu
         plan = read_json(run_root / "orchestration" / stage / "agent-plan.json", {})
         machine_actions.append({
             "executor": "codex-subagent-orchestrator",
-            "mode": "native-/agents-required",
+            "mode": "physical-codex-subagent-required",
             "stage": stage,
             "requiredWorkerCount": plan.get("recommendedSubAgents", 2),
             "minimum": 2,
@@ -186,11 +215,18 @@ def create_repair_ticket(run_root: Path, state: dict[str, Any], stage: str, gate
         "stage": stage,
         "status": "repair-required-nonterminal",
         "failureSignature": signature,
+        "classification": classify_issues(gate.get("issues", [])),
         "signatureAttempt": entry["attempt"],
         "strategyGeneration": entry["strategyGeneration"],
         "rootCauseRequired": True,
         "rule": 'Do not convert a failed gate into completion. Repair the physical root cause and rerun the same gate.',
         "strategyChangeRequired": entry["strategyGeneration"] > 1,
+        "strategyHistory": entry.setdefault("history", []) + [{
+            "attempt": entry["attempt"],
+            "generation": entry["strategyGeneration"],
+            "issueCodes": sorted(str(item.get("code", "")) for item in gate.get("issues", [])),
+            "createdAt": utc_now(),
+        }],
         "issues": gate.get("issues", []),
         "deterministicRepair": deterministic,
         "repairEvidence": [],
@@ -204,6 +240,7 @@ def create_repair_ticket(run_root: Path, state: dict[str, Any], stage: str, gate
         "nextCommand": f"python3 scripts/kh_aw_cli.py advance --run-root {run_root.as_posix()} --stage {stage}",
     }
     write_json(ticket_path, ticket)
+    entry["history"] = ticket["strategyHistory"]
     repair_state["activeTicket"] = ticket_path.as_posix()
     state["status"] = "repairing"
     state["currentStage"] = stage

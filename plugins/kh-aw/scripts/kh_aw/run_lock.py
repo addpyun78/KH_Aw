@@ -38,7 +38,7 @@ def expected_run_lock(state: dict[str, Any]) -> dict[str, Any]:
     payload["independentSubAgentSessions"] = "required"
     payload["internalLanguage"] = "en"
     payload["userFacingLanguage"] = "ko-KR"
-    payload["requiredSlashEvidence"] = "native"
+    payload["requiredCapabilityEvidence"] = "physical"
     payload["stageOrder"] = ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]
     return payload
 

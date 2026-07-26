@@ -1,0 +1,15 @@
+{"id":"official-plugin-docs","url":"https://developers.openai.com/codex/plugins","type":"official-doc","usedFor":["installation","plugin-components","new-session"]}
+{"id":"official-skills-docs","url":"https://developers.openai.com/codex/skills","type":"official-doc","usedFor":["progressive-disclosure","skill-structure"]}
+{"id":"official-agents-md","url":"https://developers.openai.com/codex/guides/agents-md","type":"official-doc","usedFor":["instruction-discovery","layering","size-limit"]}
+{"id":"official-subagents","url":"https://developers.openai.com/codex/subagents","type":"official-doc","usedFor":["delegation","independent-workers"]}
+{"id":"official-hooks","url":"https://learn.chatgpt.com/codex/hooks","type":"official-doc","usedFor":["lifecycle","trust"]}
+{"id":"official-slash","url":"https://learn.chatgpt.com/codex/reference/slash-commands","type":"official-doc","usedFor":["surface-variability","supported-commands"]}
+{"id":"official-build-plugin","url":"https://developers.openai.com/plugins/build/plugins","type":"official-doc","usedFor":["manifest","package-layout"]}
+{"id":"official-plugin-json-spec","url":"https://github.com/openai/codex/blob/main/codex-rs/skills/src/assets/samples/plugin-creator/references/plugin-json-spec.md","type":"official-source","usedFor":["defaultPrompt-limit","manifest-fields"]}
+{"id":"official-openai-plugins","url":"https://github.com/openai/plugins","commit":"11c74d6ba24d3a6d48f54a194cd00ef3beea18f9","type":"official-repository","usedFor":["ten-plugin-comparison"]}
+{"id":"cache-path-issue","url":"https://github.com/openai/codex/issues/17066","type":"public-issue","usedFor":["versioned-cache-shape"]}
+{"id":"a-team","url":"https://github.com/RBraga01/a-team","commit":"f67b0ed0e028fa7febbf89b3ad4a02ebb44e6b64","type":"community-repository","usedFor":["agents","commands","tests"]}
+{"id":"tailtest","url":"https://github.com/avansaber/tailtest-codex","commit":"61132f9e6c4f9703ec707d7bf0d561fa49e64a2a","type":"community-repository","usedFor":["hooks","tests"]}
+{"id":"bringyour-mcp","url":"https://github.com/unitedideas/bringyour-mcp","commit":"75f001964fd40540c47b392a8dd0ef9b1cbd8ed4","type":"community-repository","usedFor":["single-skill","agents"]}
+{"id":"codetruss","url":"https://github.com/DeliriumPulse/codetruss-plugins","commit":"909632e421e384b44f2a2fca1b22733e76982f27","type":"community-repository","usedFor":["skills","scripts","agents"]}
+{"id":"process-jobs","url":"https://github.com/joelfarthing/codex-process-jobs","commit":"e35770cb6b65beb0f77a9e111e5c96d71b714f4d","type":"community-repository","usedFor":["scripts","hooks","tests"]}

@@ -76,6 +76,13 @@ TARGET_REQUIREMENTS: dict[str, list[dict[str, Any]]] = {
         {"id": "ios-ui-test", "required": True, "kind": "simulator"},
     ],
     "cross-platform": [],
+    "codex-plugin": [
+        {"id": "project-security-scan", "required": True, "kind": "security"},
+        {"id": "plugin-python-tests", "required": True, "kind": "test"},
+        {"id": "plugin-node-syntax", "required": True, "kind": "test"},
+        {"id": "plugin-doctor", "required": True, "kind": "validation"},
+        {"id": "plugin-package-reproducibility", "required": True, "kind": "packaging"},
+    ],
     "unknown-needs-confirmation": [],
 }
 TARGET_REQUIREMENTS["app-mobile-webview"] = TARGET_REQUIREMENTS["web-responsive"] + TARGET_REQUIREMENTS["android-native"]
@@ -491,6 +498,19 @@ def suggested_commands(target: str, project_root: Path, discovery: dict[str, Any
     if target == "ios-native":
         commands.setdefault("ios-xcodebuild-list", "xcodebuild -list")
         commands.setdefault("ios-simulator-list", "xcrun simctl list devices available")
+    if target == "codex-plugin":
+        cli = project_root / "plugins" / "kh-aw" / "scripts" / "kh_aw_cli.py"
+        plugin = project_root / "plugins" / "kh-aw"
+        commands.setdefault("plugin-python-tests", "python -m pytest -q")
+        commands.setdefault(
+            "plugin-node-syntax",
+            "powershell -NoProfile -Command \"Get-ChildItem plugins/kh-aw/scripts/*.mjs | ForEach-Object { node --check $_.FullName }\"",
+        )
+        commands.setdefault("plugin-doctor", f'python "{cli}" doctor --plugin-root "{plugin}"')
+        commands.setdefault(
+            "plugin-package-reproducibility",
+            f'python "{cli}" build-package --plugin-root "{plugin}" --output "{project_root / "dist" / "kh-aw.zip"}"',
+        )
     if (project_root / "tsconfig.json").is_file() or any(project_root.glob("tsconfig.*.json")):
         commands.setdefault("web-typecheck", _npm_script(scripts, ["typecheck", "check:types"]) or "npx tsc --noEmit")
     if (project_root / "package-lock.json").is_file() or (project_root / "npm-shrinkwrap.json").is_file():

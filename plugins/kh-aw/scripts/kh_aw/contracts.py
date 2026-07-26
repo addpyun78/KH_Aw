@@ -8,6 +8,8 @@ from .language_policy import language_policy
 from .tooling import tool_policy
 from .orchestration import orchestration_policy
 from .util import exact_instruction_lines, utc_now, write_json
+from .requirement_compiler import compile_requirements
+from .task_graph import build_task_graph
 
 STAGES = ["intake", "analyze", "research", "design", "implement", "review", "test", "release"]
 PASSED_STAGE_STATUSES = {
@@ -32,36 +34,7 @@ def stage_status_passed(value: Any) -> bool:
 
 
 def requirement_contract(instructions: str) -> dict[str, Any]:
-    lines = exact_instruction_lines(instructions)
-    requirements = []
-    raw_coverage = []
-    for index, line in enumerate(lines, 1):
-        raw_id = f"RAW-{index:03d}"
-        req_id = f"REQ-{index:03d}"
-        requirements.append({
-            "id": req_id,
-            "requirement": line,
-            "source": raw_id,
-            "priority": "critical",
-            "status": "preserved",
-            "acceptanceChecks": [],
-        })
-        raw_coverage.append({
-            "id": raw_id,
-            "lineNumber": index,
-            "sourceText": line,
-            "requirementIds": [req_id],
-            "status": "preserved",
-            "evidence": "Exact non-empty instruction line preserved at initialization.",
-        })
-    return {
-        "schemaVersion": "3.0",
-        "generatedAt": utc_now(),
-        "rawInstructionCount": len(lines),
-        "requirements": requirements,
-        "rawInstructionCoverage": raw_coverage,
-        "omissions": [],
-    }
+    return compile_requirements(instructions)
 
 
 def analysis_ledger_template() -> dict[str, Any]:
@@ -300,7 +273,9 @@ def create_run_contracts(run_root: Path, instructions: str, target: str) -> dict
     (folders["test"] / "logs").mkdir(parents=True, exist_ok=True)
 
     requirements = requirement_contract(instructions)
+    task_graph = build_task_graph(requirements)
     write_json(folders["contract"] / "requirements.json", requirements)
+    write_json(folders["contract"] / "task-graph.json", task_graph)
     write_json(folders["contract"] / "native-capability-policy.json", capability_policy())
     write_json(folders["contract"] / "language-policy.json", language_policy())
     write_json(folders["contract"] / "tool-policy.json", tool_policy(target))
@@ -319,6 +294,7 @@ def create_run_contracts(run_root: Path, instructions: str, target: str) -> dict
 
     return {
         "requirements": (folders["contract"] / "requirements.json").as_posix(),
+        "taskGraph": (folders["contract"] / "task-graph.json").as_posix(),
         "nativeCapabilityPolicy": (folders["contract"] / "native-capability-policy.json").as_posix(),
         "languagePolicy": (folders["contract"] / "language-policy.json").as_posix(),
         "toolPolicy": (folders["contract"] / "tool-policy.json").as_posix(),

@@ -1,43 +1,31 @@
-# KH_Aw 3.2.0 Release Notes
+# KH_Aw 4.0.0 Redesign Notes
 
-## 3.2 핵심 추가
+## Installation and integrity
 
-- 모든 8단계에 대장 AI·독립 하위 AI 오케스트레이션 적용
-- 배포본 완전성 validator 추가: 엔진·스킬·스키마·테스트·CI·감사자료 누락 시 doctor 실패
-- 회귀 테스트 50개 이상 전부 통과
+- Accept source and versioned cache root layouts.
+- Separate plugin, marketplace, distribution, and project doctor scopes.
+- Verify UTF-8 text by raw or normalized-LF hashes.
+- Detect cache duplicates and shadowing.
+- Enforce official `defaultPrompt` count and length limits.
 
-- 대장 AI가 계산된 안전 최저치 이상에서 물리 근거 파일로 하위 AI 수를 증원 가능
-- worker별 불변 dispatch JSON과 실제 디스크 SHA-256
-- worker별 실제 호출 영수증 JSON과 중복 영수증 차단
-- 모든 worker 결과가 최소 한 번 검토되는 ring 교차검토
-- worker 역할 shard 고유성 검사
-- lead-contract SHA-256과 plan fingerprint 기반 대장 AI 집계
-- 8개 전체 단계에 대해 2~60 배정·dispatch·lead contract 회귀 테스트
-- 프로젝트 규모에 따라 하위 AI 최소 2개·최대 60개 동적 계산
-- 무조건 60개 호출 금지
-- 파일·요구사항·페이지·필드·로직·기능·위험·도구 수 기반 단계별 scaling
-- worker/task/role/scope immutable plan과 fingerprint
-- 독립 Codex session ID와 물리 결과 파일·SHA-256 강제
-- 동일 session·동일 결과 해시 차단
-- 하위 AI 교차검토 필수
-- 대장 AI의 전체 worker 집계·충돌 해결 증거 필수
-- 필수 slash 기능 fallback 통과 금지와 실제 Codex rollout JSONL 검증
-- 하위 AI 정책·계획 변조 자동복구
-- 집계만 누락된 경우 기존 유효 worker 결과 보존
-- orchestration plan·ledger·aggregation을 단계 checkpoint와 release receipt에 포함
+## Runtime and control
 
-## 기존 3.0 기능 유지
+- One public `kh-aw` skill.
+- Add `codex-plugin` target.
+- Bootstrap a hashed project-owned runtime.
+- Add explicit resume history.
+- Compile exact instructions into semantic requirements and a task graph.
+- Add source reachability and independent run verification.
+- Replace unsupported slash contracts with behavior-based capability evidence.
+- Classify repair issues and retain strategy history.
+- Bind final claims to physical evidence.
 
-- Codex 웹 마켓플레이스 구조
-- 8단계 상태 머신·우회 차단
-- 비종료 자동수리·전략 세대 변경
-- 분석폴더 분기·자동복구
-- 원문·run-lock 이중 해시 잠금
-- 실제 본문 추출
-- 모든 페이지 독립 목업·PNG
-- 이미지·모션·reduced-motion
-- 웹 3브라우저·axe·Lighthouse·시각회귀
-- Android 무설치 에뮬레이터·스크린샷 테스트
-- iOS Simulator
-- 조건부 도구 자동 활성화
-- APK 설치 명령 차단
+## Packaging and evidence
+
+- Add a single version ledger and deterministic ZIP builder.
+- Add local cache, CRLF, duplicate-shadow, and repeatable-ZIP E2E.
+- Add 15 public implementation comparisons, actual failure reproduction, architecture,
+  beginner documents, and a 40-condition status ledger.
+
+External GitHub publication, supported plugin-manager reinstall, and fresh-session
+`@kh-aw` invocation are intentionally not recorded as passed in this source snapshot.

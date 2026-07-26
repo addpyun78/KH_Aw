@@ -80,9 +80,10 @@ def validate_plugin(plugin_root: Path) -> list[str]:
     name = manifest.get("name")
     if not isinstance(name, str) or not PLUGIN_NAME.fullmatch(name):
         errors.append("plugin name must be lower-case kebab-case")
-    if plugin_root.name != name:
-        errors.append("plugin folder name must match plugin.json name")
     version = manifest.get("version")
+    versioned_cache_root = plugin_root.parent.name == name and plugin_root.name == version
+    if plugin_root.name != name and not versioned_cache_root:
+        errors.append("plugin folder name must match plugin.json name")
     if not isinstance(version, str) or not SEMVER.fullmatch(version):
         errors.append("plugin version must be strict semver")
     if not isinstance(manifest.get("description"), str) or not manifest["description"].strip():
@@ -111,6 +112,10 @@ def validate_plugin(plugin_root: Path) -> list[str]:
     prompts = interface.get("defaultPrompt", interface.get("default_prompt"))
     if not isinstance(prompts, list) or not prompts or any(not isinstance(item, str) or not item.strip() for item in prompts):
         errors.append("interface.defaultPrompt must be a non-empty string array")
+    elif len(prompts) > 3:
+        errors.append("interface.defaultPrompt must contain at most 3 prompts")
+    elif any(len(item) > 128 for item in prompts):
+        errors.append("interface.defaultPrompt entries must be at most 128 characters")
     capabilities = interface.get("capabilities")
     if not isinstance(capabilities, list) or not capabilities or any(not isinstance(item, str) or not item.strip() for item in capabilities):
         errors.append("interface.capabilities must be a non-empty string array")
@@ -132,7 +137,10 @@ def validate_plugin(plugin_root: Path) -> list[str]:
     if not skills_root.is_dir():
         errors.append("skills directory is missing")
     else:
-        for skill_dir in sorted(path for path in skills_root.iterdir() if path.is_dir() and not path.name.startswith(".")):
+        for skill_dir in sorted(
+            path for path in skills_root.iterdir()
+            if path.is_dir() and not path.name.startswith(".") and (path / "SKILL.md").is_file()
+        ):
             skill_md = skill_dir / "SKILL.md"
             if not skill_md.is_file():
                 errors.append(f"skill {skill_dir.name} missing SKILL.md")

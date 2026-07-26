@@ -417,7 +417,7 @@ def ensure_agent_plan(
         "schemaVersion": "3.2",
         "stage": stage,
         "dispatchMode": "Codex-native-agents-or-independent-Codex-tasks",
-        "preferredInvocation": "/agents",
+        "preferredInvocation": "active Codex subagent tool",
         "workerCount": plan["selectedSubAgents"],
         "planFingerprint": plan["planFingerprint"],
         "dispatchContracts": dispatch_records,
@@ -521,10 +521,10 @@ def record_subagent_result(
 ) -> dict[str, Any]:
     if stage not in STAGES:
         raise ValueError(f"unknown stage: {stage}")
-    if delegation_mode != "native-agents":
-        raise ValueError("delegation_mode must be native-agents")
-    if "/agents" not in invocation:
-        raise ValueError("native-agents invocation must contain /agents")
+    if delegation_mode not in {"native-agents", "codex-subagent", "independent-task"}:
+        raise ValueError("delegation_mode must identify a physical Codex subagent or independent task")
+    if not invocation.strip():
+        raise ValueError("subagent invocation must be recorded")
     if len(session_id.strip()) < 8:
         raise ValueError("independent subagent session ID must be at least 8 characters")
     plan = read_json(run_root / "orchestration" / stage / "agent-plan.json", {})
@@ -805,10 +805,10 @@ def orchestration_issues(run_root: Path, state: dict[str, Any], stage: str) -> l
         assignment = assignment_map.get(worker_id, {})
         if worker.get("status") != "completed" or worker.get("taskId") != assignment.get("taskId") or worker.get("role") != assignment.get("role"):
             issues.append({"code": "SUBAGENT_RECORD_INVALID", "message": 'KH_Aw blocked this operation: subagent record invalid.', "workerId": worker_id})
-        if worker.get("delegationMode") != "native-agents":
+        if worker.get("delegationMode") not in {"native-agents", "codex-subagent", "independent-task"}:
             issues.append({"code": "SUBAGENT_DELEGATION_NOT_AI", "message": 'KH_Aw blocked this operation: subagent delegation not ai.', "workerId": worker_id})
-        if "/agents" not in str(worker.get("invocation", "")):
-            issues.append({"code": "SUBAGENT_NATIVE_INVOCATION_INVALID", "message": 'KH_Aw blocked this operation: subagent native invocation invalid.', "workerId": worker_id})
+        if not str(worker.get("invocation", "")).strip():
+            issues.append({"code": "SUBAGENT_NATIVE_INVOCATION_INVALID", "message": 'KH_Aw blocked this operation: subagent invocation receipt is empty.', "workerId": worker_id})
         session_path = Path(str(worker.get("sessionEvidencePath", ""))).expanduser()
         if (
             not session_path.is_file()

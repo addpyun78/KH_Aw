@@ -338,15 +338,9 @@ def _gate_native_capabilities(run_root: Path, stage: str) -> list[dict[str, Any]
         if record.get("evidenceSha256") != sha256_file(path):
             issues.append(issue("NATIVE_CAPABILITY_HASH_MISMATCH", canonical_issue_message('NATIVE_CAPABILITY_HASH_MISMATCH'), capabilityId=capability_id))
         preferred = str(definition.get("preferredSlash", ""))
-        if record.get("mode") != "native":
-            issues.append(issue(
-                "NATIVE_SLASH_REQUIRED",
-                "A diagnostic fallback cannot satisfy a required Codex slash capability.",
-                capabilityId=capability_id,
-                preferredSlash=preferred,
-                recordedMode=record.get("mode"),
-            ))
-        if not str(record.get("sessionId", "")).strip() or preferred not in str(record.get("invocation", "")):
+        if record.get("mode") == "native" and (
+            not str(record.get("sessionId", "")).strip() or preferred not in str(record.get("invocation", ""))
+        ):
             issues.append(issue(
                 "NATIVE_CAPABILITY_SESSION_LINK_INVALID",
                 "Native slash evidence must identify the Codex session and exact slash invocation.",
@@ -357,7 +351,7 @@ def _gate_native_capabilities(run_root: Path, stage: str) -> list[dict[str, Any]
         session_text = ""
         if session_path.is_file():
             session_text = session_path.read_text(encoding="utf-8", errors="replace")
-        if (
+        if record.get("mode") == "native" and (
             not session_path.is_file()
             or "/.codex/sessions/" not in session_path.as_posix().lower()
             or not session_path.name.lower().startswith("rollout-")
@@ -452,10 +446,10 @@ def gate_intake(run_root: Path, state: dict[str, Any]) -> list[dict[str, Any]]:
             ))
     policy_capability_ids = [str(item.get("id", "")) for item in capability_policy.get("capabilities", []) if isinstance(item, dict) and item.get("required") is True]
     canonical_capability_ids = [str(item.get("id", "")) for item in NATIVE_CAPABILITIES if item.get("required") is True]
-    if capability_policy.get("requiredEvidenceMode") != "native" or capability_policy.get("fallbackSatisfiesRequiredCapability") is not False:
+    if capability_policy.get("requiredEvidenceMode") != "physical-capability" or capability_policy.get("fallbackSatisfiesRequiredCapability") is not True:
         issues.append(issue(
             "NATIVE_CAPABILITY_POLICY_TAMPERED",
-            "Required slash capabilities must remain native-only and fail closed when unavailable.",
+            "Required behaviors must remain physical-evidence based and cannot depend on unsupported slash names.",
         ))
     if policy_capability_ids != canonical_capability_ids:
         issues.append(issue("NATIVE_CAPABILITY_POLICY_TAMPERED", canonical_issue_message('NATIVE_CAPABILITY_POLICY_TAMPERED'), expected=canonical_capability_ids, actual=policy_capability_ids))

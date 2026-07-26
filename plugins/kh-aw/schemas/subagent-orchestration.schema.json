@@ -82,6 +82,7 @@
       "type": "array",
       "minItems": 2,
       "maxItems": 60,
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "required": [
